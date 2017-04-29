@@ -18,4 +18,6 @@ xi = np.sqrt(2/nu)*(L+k*nu)
 res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
 ans = float(res.real)+1j*float(res.imag)
 #ans = np.exp(-0.25*xi**2)#*
-print(float(np.exp(-0.25*xi**2)*res.real))
+#print(float(np.exp(-0.25*xi**2)*res.real))
+
+print(int(1.2*10%10.))

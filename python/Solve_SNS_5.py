@@ -11,11 +11,14 @@ import math
 
 def y1(a,xi):
 	res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
-	return np.exp(-0.25*xi**2)*(float(res.real)+1j*float(res.imag))
+	factor = np.exp(-0.25*xi**2)
+	#This is a way to write factor*res without getting infs or nans
+	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
 	
 def y2(a,xi):
 	res = xi*mpmath.hyp1f1(0.5*a+0.75,1.5,0.5*xi**2)
-	return np.exp(-0.25*xi**2)*(float(res.real)+1j*float(res.imag))
+	factor = np.exp(-0.25*xi**2)
+	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
 	
 def Y1(a,xi):
 	#Low field:
@@ -144,8 +147,8 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	   
 	matrix = np.array([[D1_eL, D2_eL, 0, 0, gamma_hL, gamma_eL, 0, 0],
 					   [0, 0, D1_hL, D2_hL, 1, 1, 0, 0],
-					   [dD1_eL, dD2_eL, 0, 0, (ZL+1j)*qh*gamma_hL, (Z-1j)*qe*gamma_eL, 0, 0],
-					   [0, 0, dD1_hL, dD2_hL, (ZL+1j)*qh, (Z-1j)*qe, 0, 0],
+					   [dD1_eL, dD2_eL, 0, 0, (ZL+1j)*qh*gamma_hL, (ZL-1j)*qe*gamma_eL, 0, 0],
+					   [0, 0, dD1_hL, dD2_hL, (ZL+1j)*qh, (ZL-1j)*qe, 0, 0],
 					   [D1_eR, D2_eR, 0, 0, 0, 0, gamma_hR, gamma_eR],
 					   [0, 0, D1_hR, D2_hR, 0, 0, 1, 1],
 					   [dD1_eR, dD2_eR, 0, 0, 0, 0, (-ZR-1j)*qh*gamma_hR, (-ZR+1j)*qe*gamma_eR],
@@ -185,8 +188,8 @@ def makePlotPhi(nu, delta, Z, k, L, N, n):
 def makePlotk(nu, delta, Z, phi, L, N, n):
 	print('makePlotk')
 	buf = 0.25
-	k_start = -0.99
-	k_end = 0.99
+	k_start = -1.25
+	k_end = 1.25
 	k_array = np.linspace(k_start, k_end, N)
 	E_array = np.zeros(k_array.shape)
 	e0 = np.linspace(0+buf,delta-buf,n)
@@ -248,15 +251,15 @@ def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
 		plt.axis([phi_start,phi_end,-delta,delta])
 		title = 'nu = '+str(nu) + ', delta='+str(delta)
 		plt.title(title)
-		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int((k-mpmath.floor(k))*10))+'_root/'
+		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int(k*10%10.))+'_root/'
 		name = 'nu_'+str(nu)+'_delta_'+str(delta)+'_n_'+str(n)+'N_'+str(N)
 		fig.savefig(path+name+'.png')
 	
 
 
-nu_start = 100.
-nu_end = 2000.
-figCount = 39
+nu_start = 105.
+nu_end = 105.
+figCount = 1
 	
 hw = 0.1#155789473684
 N = 100
@@ -277,7 +280,7 @@ n2 = 3
 
 k = 0.8
 delta = 2.#delta2
-n = 5
+n = 3
 nu = 2000.
 
 
