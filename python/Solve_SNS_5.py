@@ -220,14 +220,12 @@ def testFunction(nu, delta, Z, k, L, N, n):
 		plt.plot(E_array,Func_array,label=plotLabel)
 	plt.legend()
 	plt.show()
-	
-def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
+
+def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
 	print('plotAndSave')
-	k_array = np.linspace(k_start,k_end,figCount)
-	for k in k_array:
-		delta = 2.
-		nu = 2000.
-		print('k:',k)
+	nu_array = np.linspace(nu_start,nu_end,figCount)
+	for nu in nu_array:
+		delta = nu/1000.
 		print('nu:',nu)
 		print('delta:',delta)
 		buf = 0.1
@@ -245,52 +243,55 @@ def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
 					E_array[i] = rootResult.x[0]
 				else:
 					E_array[i] = 2*delta #this is a quick fix			
-				#E_array[i] = opt.fsolve(fun,e0[j],args=(k,hw,delta,L,Z,phi_array[i]))[0]
+				#E_array[i] = opt.fsolve(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))[0]
 			plt.plot(phi_array,E_array,'.b')
 		plt.axis([phi_start,phi_end,-delta,delta])
-		title = 'k = '+str(k)
+		title = 'nu = '+str(nu) + ', delta='+str(delta)
 		plt.title(title)
-		#path = 'figures/042717/SNS_5_pcfd_delta_2_nu_200_root/'
-		path = 'figures/042717/SNS_5_Only_y1_varying_k/delta_2_nu_2000/'
-		name = 'k_'+str(k)+'n_'+str(n)+'N_'+str(N)
+		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int((k-mpmath.floor(k))*10))+'_root/'
+		name = 'nu_'+str(nu)+'_delta_'+str(delta)+'_n_'+str(n)+'N_'+str(N)
 		fig.savefig(path+name+'.png')
 	
 
 
-k_start = 0.6
-k_end = 0.95
-figCount = 8
+nu_start = 100.
+nu_end = 2000.
+figCount = 39
 	
 hw = 0.1#155789473684
-N = 200
+N = 100
 Z = 0
 phi = 1.
 L = 106.7
 
 ########
 k0 = 0.
-k2 = 0.2
+k2 = 0.
 
 delta0 = 200.
-delta2 = 200.
+delta2 = 2.
 
 n0 = 5
-n2 = 5
+n2 = 3
 ########
 
-k = k2
-delta = 2.
+k = 0.8
+delta = 2.#delta2
 n = 5
 nu = 2000.
 
+
 print('y1y2')
-#print('k',k)
-#print('delta',delta)
-print('n',n)
-#print('nu:',nu)
-#makePlotPhi(nu,delta,Z,k,L,N,n)
+print('k',k)
+print('delta',delta)
+#print('n',n)
+print('nu:',nu)
 #makePlotk(nu, delta, Z, phi, L, N, n)
+makePlotPhi(nu,delta,Z,k,L,N,n)
 #testFunction(nu, delta, Z, k, L, N, n)
-plotAndSave(k_start, k_end, figCount, Z, k, L, N, n)
+#plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
+
+   
+
 
    

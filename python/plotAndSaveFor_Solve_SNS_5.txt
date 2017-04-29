@@ -216,6 +216,7 @@ plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
 
 
 ########################################
+	
 def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
 	print('plotAndSave')
 	k_array = np.linspace(k_start,k_end,figCount)
@@ -252,9 +253,9 @@ def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
 	
 
 
-k_start = 0.2
-k_end = 0.3
-figCount = 10
+k_start = 0.75
+k_end = 1.5
+figCount = 16
 	
 hw = 0.1#155789473684
 N = 200
