@@ -1,0 +1,28 @@
+syms eta phi theta nu k L a b
+M11 = [1 0 0 exp(1i*(-eta+phi/2)); 0 1 -exp(1i*(-eta+phi/2)) 0; 0 -exp(1i*(-eta-phi/2)) 1 0; exp(1i*(-eta-phi/2)) 0 0 1];
+M12 = zeros(4,4);
+M13 = [1 -exp(1i*(nu + theta)) 0 0; -exp(1i*(nu - theta)) 1 0 0; 0 0 1 exp(1i*(nu-theta)); 0 0 exp(1i*(nu+theta)) 1];
+M14 = [1 exp(1i*(nu - theta)) 0 0; exp(1i*(nu + theta)) 1 0 0; 0 0 1 -exp(1i*(nu+theta)); 0 0 -exp(1i*(nu-theta)) 1];
+M21 = zeros(4,4);
+M22 = [1 0 0 exp(1i*(-eta-phi/2)); 0 1 -exp(1i*(-eta-phi/2)) 0; 0 -exp(1i*(-eta+phi/2)) 1 0; exp(1i*(-eta+phi/2)) 0 0 1];
+M23 = [exp(1i*(1+a)*k*L) -exp(1i*(nu + theta +(1-a)*k*L)) 0 0; -exp(1i*(nu - theta +(1+a)*k*L)) exp(1i*(1-a)*k*L) 0 0; ...
+    0 0 exp(-1i*(1+a)*k*L) exp(1i*(nu-theta-(1-a)*k*L)); 0 0 exp(1i*(nu + theta - (1+a)*k*L)) exp(-1i*(1-a)*k*L)];
+M24 = [exp(-1i*(1+a)*k*L) exp(1i*(nu - theta -(1-a)*k*L)) 0 0; exp(1i*(nu + theta -(1+a)*k*L)) exp(-1i*(1-a)*k*L) 0 0; ...
+    0 0 exp(1i*(1+a)*k*L) -exp(1i*(nu+theta+(1-a)*k*L)); 0 0 -exp(1i*(nu - theta + (1+a)*k*L)) exp(1i*(1-a)*k*L)];
+M31 = [-1i*k b -b*exp(1i*(-eta + phi/2)) 1i*k*exp(1i*(-eta+phi/2)); -b -1i*k -1i*k*exp(1i*(-eta + phi/2)) -b*exp(1i*(-eta + phi/2)); ...
+    b*exp(1i*(-eta - phi/2)) 1i*k*exp(1i*(-eta -phi/2)) 1i*k b; -1i*k*exp(1i*(-eta - phi/2)) b*exp(1i*(-eta-phi/2)) -b 1i*k];
+M32 = zeros(4,4);
+M33 = [-1i*(1+a)*k 1i*(1-a)*k*exp(1i*(nu + theta)) 0 0; 1i*(1+a)*k*exp(1i*(nu-theta)) -1i*(1-a)*k 0 0; ...
+    0 0 1i*(1+a)*k 1i*(1-a)*k*exp(1i*(nu-theta)); 0 0 1i*(1+a)*k*exp(1i*(nu+theta)) 1i*(1-a)*k];
+M34 = [1i*(1+a)*k 1i*(1-a)*k*exp(1i*(nu - theta)) 0 0; 1i*(1+a)*k*exp(1i*(nu+theta)) 1i*(1-a)*k 0 0; ...
+    0 0 -1i*(1+a)*k 1i*(1-a)*k*exp(1i*(nu+theta)); 0 0 1i*(1+a)*k*exp(1i*(nu-theta)) -1i*(1-a)*k];
+M41 = zeros(4,4);
+M42 = [1i*k b -b*exp(1i*(-eta - phi/2)) -1i*k*exp(1i*(-eta-phi/2)); -b 1i*k 1i*k*exp(1i*(-eta - phi/2)) -b*exp(1i*(-eta - phi/2)); ...
+    b*exp(1i*(-eta + phi/2)) -1i*k*exp(1i*(-eta +phi/2)) -1i*k b; 1i*k*exp(1i*(-eta + phi/2)) b*exp(1i*(-eta+phi/2)) -b -1i*k];
+M43 = [-1i*(1+a)*k*exp(1i*(1+a)*k*L) 1i*(1-a)*k*exp(1i*(nu + theta))*exp(1i*(1-a)*k*L) 0 0; 1i*(1+a)*k*exp(1i*(nu-theta))*exp(1i*(1+a)*k*L) -1i*(1-a)*k*exp(1i*(1-a)*k*L) 0 0; ...
+    0 0 1i*(1+a)*k*exp(-1i*(1+a)*k*L) 1i*(1-a)*k*exp(1i*(nu-theta))*exp(-1i*(1-a)*k*L); 0 0 1i*(1+a)*k*exp(1i*(nu+theta))*exp(-1i*(1+a)*k*L) 1i*(1-a)*k*exp(-1i*(1+a)*k*L)];
+M44 = [1i*(1+a)*k*exp(-1i*(1+a)*k*L) 1i*(1-a)*k*exp(1i*(nu - theta))*exp(-1i*(1-a)*k*L) 0 0; 1i*(1+a)*k*exp(1i*(nu+theta))*exp(-1i*(1+a)*k*L) 1i*(1-a)*k*exp(-1i*(1-a)*k*L) 0 0; ...
+    0 0 -1i*(1+a)*k*exp(1i*(1+a)*k*L) 1i*(1-a)*k*exp(1i*(nu+theta))*exp(1i*(1-a)*k*L); 0 0 1i*(1+a)*k*exp(1i*(nu-theta)) -1i*(1-a)*k*exp(1i*(1-a)*k*L)];
+
+M = [M11 M12 M13 M14; M21 M22 M23 M24; M31 M32 M33 M34; M41 M42 M43 M44];
+

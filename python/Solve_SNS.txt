@@ -1,0 +1,125 @@
+import numpy as np
+from matplotlib import pyplot as plt
+# nicer looking default plots
+plt.style.use('bmh')
+from scipy import optimize as opt
+from scipy import special as sp
+from scipy import misc
+from scipy.linalg import det
+import mpmath
+
+def U(a,x):
+    return float(mpmath.pcfd(-a-1./2.,x))
+
+def dUFunction(x,a,c,X):
+    return U(a,c*(x+X))
+
+def V(a,x):
+    if np.isinf(sp.gamma(1./2.+a)):
+        return np.inf
+    return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*U(a,x)+U(a,-x))
+
+def dVFunction(x,a,c,X):
+    return V(a,c*(x+X))
+	
+def fun(E_,k,nu,delta,W,Z,sgn):
+	if isinstance(E_,float):
+		E = E_
+	else:
+		E = E_[0]
+    
+	if abs(E)>abs(delta):
+		return 1
+	
+	a_e = -(E+nu/2)
+	a_h = -(-E+nu/2)
+	eta = 2/nu*np.sqrt(delta*delta-E*E)
+	gamma_e = delta/(E+1j*np.sqrt(delta*delta - E*E))
+	gamma_h = delta/(E-1j*np.sqrt(delta*delta - E*E))
+	q_e = np.sqrt(1-k*k-1j*eta)	# or -1j ?
+	q_h = np.sqrt(1-k*k+1j*eta)	# or +1j ?
+    
+	xiW_e = np.sqrt(2/nu)*(W+k*nu*sgn) #or -k*nu*sgn?
+	xiW_h = np.sqrt(2/nu)*(W-k*nu*sgn) #or +k*nu*sgn?
+	xi0_e = np.sqrt(2/nu)*(0+k*nu*sgn) #or -k*nu*sgn?
+	xi0_h = np.sqrt(2/nu)*(0-k*nu*sgn) #or +k*nu*sgn?
+
+	D1_eW = U(a_e,xiW_e)
+	D2_eW = V(a_e,xiW_e)
+	D1_hW = U(a_h,xiW_h)
+	D2_hW = V(a_h,xiW_h)
+	
+	D1_e0 = U(a_e,xi0_e)
+	D2_e0 = V(a_e,xi0_e)
+	D1_h0 = U(a_h,xi0_h)
+	D2_h0 = V(a_h,xi0_h)
+	
+	dD1_e = misc.derivative(dUFunction,0,args=(a_e,np.sqrt(2/nu),nu*k*sgn))
+	dD2_e = misc.derivative(dVFunction,0,args=(a_e,np.sqrt(2/nu),nu*k*sgn))
+	dD1_h = misc.derivative(dUFunction,0,args=(a_h,np.sqrt(2/nu),-nu*k*sgn))
+	dD2_h = misc.derivative(dVFunction,0,args=(a_h,np.sqrt(2/nu),-nu*k*sgn))
+
+	matrix = np.array([[D1_eW, D2_eW, 0, 0, 0, 0],
+					   [0, 0, D1_hW, D2_hW, 0, 0],
+					   [D1_e0, D2_e0, 0, 0, gamma_e, gamma_h],
+					   [0, 0, D1_h0, D2_h0, 1, 1],
+					   [dD1_e, dD2_e, 0, 0, (Z+1j*q_e)*gamma_e, (Z-1j*q_h)*gamma_h],
+					   [0, 0, dD1_h, dD2_h, Z+1j*q_e, Z-1j*q_h]])
+	D = det(matrix)
+	return D.imag
+		
+def makePlot(nu, delta, Z, sgn, W, N, n):
+	buf = 0.25
+	k_start = -1.25
+	k_end = 1.25
+	k_array = np.linspace(k_start, k_end, N)
+	E_array = np.zeros(k_array.shape)
+	e0 = np.linspace(0+buf,delta-buf,n)
+	plt.figure()
+	for j in range(n):
+		print('count:',j+1,'/',n)
+		for i in range(N):		
+			E_array[i] = opt.fsolve(fun,e0[j],args=(k_array[i],nu,delta,W,Z,sgn))[0]
+			plt.plot(k_array,E_array,'.b')
+	plt.axis([k_start,k_end,0.05,delta-0.05])	
+	plt.show()
+
+N = 300
+n = 2
+nu = 40.#160.
+delta = 2.#8.
+Z = 0
+sgn = 1
+W = 106.7
+
+makePlot(nu,delta,Z,sgn,W,N,n)
+
+"""
+
+N = 100
+k = -0.1
+delta = 2.
+nu = 40
+Z = 0
+W = 0
+sgn = 1
+
+E = np.linspace(0.,delta,N)
+res = np.zeros(E.shape)
+
+for i in range(N):
+    res[i] = fun(E[i], k, nu, delta, W, Z, sgn)
+
+plt.plot(E,res)
+plt.show()
+
+"""
+
+
+
+
+
+
+   
+
+

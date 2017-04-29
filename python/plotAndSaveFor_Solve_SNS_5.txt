@@ -1,0 +1,289 @@
+	
+def plotAndSave(delta_start, delta_end, figCount, Z, k, L, N, n):
+	print('plotAndSave')
+	delta_array = np.linspace(delta_start,delta_end,figCount)
+	for delta in delta_array:
+		print('delta:',delta)
+		nu = 4000.
+		buf = 0.1
+		phi_start = -3*np.pi
+		phi_end = 3*np.pi
+		phi_array = np.linspace(phi_start, phi_end, N)
+		E_array = np.zeros(phi_array.shape)
+		e0 = np.linspace(-delta+buf,delta-buf,n)
+		fig = plt.figure()
+		for j in range(n):
+			print('count:',j+1,'/',n)
+			for i in range(N):	
+				rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
+				if rootResult.success:
+					E_array[i] = rootResult.x[0]
+				else:
+					E_array[i] = 2*delta #this is a quick fix			
+				#E_array[i] = opt.fsolve(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))[0]
+			plt.plot(phi_array,E_array,'.b')
+		plt.axis([phi_start,phi_end,-delta,delta])
+		title = 'delta = '+str(delta)
+		plt.title(title)
+		path = 'figures/042617/SNS_5_Only_y1_nu_4000_k_0_root/'
+		name = 'delta_'+str(delta)+'n_'+str(n)+'N_'+str(N)
+		fig.savefig(path+name+'.png')
+	
+
+
+delta_start = 5.
+delta_end = 30.
+figCount = 4
+	
+hw = 0.1#155789473684
+N = 400
+Z = 0
+phi = 1.
+L = 106.7
+
+########
+k0 = 0.
+k2 = 0.2
+
+delta0 = 200.
+delta2 = 2.
+
+n0 = 5
+n2 = 10
+########
+
+k = k0
+delta = delta0
+n = n0
+nu = 100.
+
+print('k',k)
+print('delta',delta)
+print('n',n)
+#print('nu:',nu)
+#makePlotPhi(nu,delta,Z,k,L,N,n)
+#testFunction(nu, delta, Z, k, L, N, n)
+plotAndSave(delta_start, delta_end, figCount, Z, k, L, N, n)
+
+
+
+
+###################################################
+
+
+
+
+def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
+	print('plotAndSave')
+	nu_array = np.linspace(nu_start,nu_end,figCount)
+	#nu_array = [20000., 30000., 40000., 50000., 75000., 100000., 200000., 300000., 400000., 500000.]
+	for nu in nu_array:
+		print('nu:',nu)
+		delta = 200.
+		buf = 0.1
+		phi_start = -3*np.pi
+		phi_end = 3*np.pi
+		phi_array = np.linspace(phi_start, phi_end, N)
+		E_array = np.zeros(phi_array.shape)
+		e0 = np.linspace(-delta+buf,delta-buf,n)
+		fig = plt.figure()
+		for j in range(n):
+			print('count:',j+1,'/',n)
+			for i in range(N):	
+				rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
+				if rootResult.success:
+					E_array[i] = rootResult.x[0]
+				else:
+					E_array[i] = 2*delta #this is a quick fix			
+				#E_array[i] = opt.fsolve(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))[0]
+			plt.plot(phi_array,E_array,'.b')
+		plt.axis([phi_start,phi_end,-delta,delta])
+		title = 'nu = '+str(nu)
+		plt.title(title)
+		path = 'figures/042717/SNS_5_Only_y1_delta_200_k_0_root/'
+		name = 'nu_'+str(nu)+'n_'+str(n)+'N_'+str(N)
+		fig.savefig(path+name+'.png')
+	
+
+
+nu_start = 12000.
+nu_end = 18000.
+figCount = 4
+	
+hw = 0.1#155789473684
+N = 100
+Z = 0
+phi = 1.
+L = 106.7
+
+########
+k0 = 0.
+k2 = 0.2
+
+delta0 = 200.
+delta2 = 15.
+
+n0 = 5
+n2 = 5
+########
+
+k = k0
+delta = delta0
+n = n0
+nu = 300.
+
+print('k',k)
+print('delta',delta)
+print('n',n)
+#print('nu:',nu)
+#makePlotPhi(nu,delta,Z,k,L,N,n)
+#testFunction(nu, delta, Z, k, L, N, n)
+plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
+
+
+   	
+def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
+	print('plotAndSave')
+	nu_array = np.linspace(nu_start,nu_end,figCount)
+	for nu in nu_array:
+		delta = nu/1000.
+		print('nu:',nu)
+		print('delta:',delta)
+		buf = 0.1
+		phi_start = -3*np.pi
+		phi_end = 3*np.pi
+		phi_array = np.linspace(phi_start, phi_end, N)
+		E_array = np.zeros(phi_array.shape)
+		e0 = np.linspace(-delta+buf,delta-buf,n)
+		fig = plt.figure()
+		for j in range(n):
+			print('count:',j+1,'/',n)
+			for i in range(N):	
+				rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
+				if rootResult.success:
+					E_array[i] = rootResult.x[0]
+				else:
+					E_array[i] = 2*delta #this is a quick fix			
+				#E_array[i] = opt.fsolve(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))[0]
+			plt.plot(phi_array,E_array,'.b')
+		plt.axis([phi_start,phi_end,-delta,delta])
+		title = 'nu = '+str(nu) + ', delta='+str(delta)
+		plt.title(title)
+		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int((k-mpmath.floor(k))*10))+'_root/'
+		name = 'nu_'+str(nu)+'_delta_'+str(delta)+'_n_'+str(n)+'N_'+str(N)
+		fig.savefig(path+name+'.png')
+	
+
+
+nu_start = 500.
+nu_end = 1000.
+figCount = 11
+	
+hw = 0.1#155789473684
+N = 100
+Z = 0
+phi = 1.
+L = 106.7
+
+########
+k0 = 0.
+k2 = 0.
+
+delta0 = 200.
+delta2 = 2.
+
+n0 = 5
+n2 = 3
+########
+
+k = 0.8
+delta = 2.#delta2
+n = 5
+nu = 40.
+
+
+print('y1y2')
+print('k',k)
+print('delta',delta)
+#print('n',n)
+print('nu:',nu)
+#makePlotk(nu, delta, Z, phi, L, N, n)
+#makePlotPhi(nu,delta,Z,k,L,N,n)
+#testFunction(nu, delta, Z, k, L, N, n)
+plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
+
+   
+
+
+########################################
+def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
+	print('plotAndSave')
+	k_array = np.linspace(k_start,k_end,figCount)
+	for k in k_array:
+		delta = 2.
+		nu = 2000.
+		print('k:',k)
+		print('nu:',nu)
+		print('delta:',delta)
+		buf = 0.1
+		phi_start = -3*np.pi
+		phi_end = 3*np.pi
+		phi_array = np.linspace(phi_start, phi_end, N)
+		E_array = np.zeros(phi_array.shape)
+		e0 = np.linspace(-delta+buf,delta-buf,n)
+		fig = plt.figure()
+		for j in range(n):
+			print('count:',j+1,'/',n)
+			for i in range(N):	
+				rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
+				if rootResult.success:
+					E_array[i] = rootResult.x[0]
+				else:
+					E_array[i] = 2*delta #this is a quick fix			
+				#E_array[i] = opt.fsolve(fun,e0[j],args=(k,hw,delta,L,Z,phi_array[i]))[0]
+			plt.plot(phi_array,E_array,'.b')
+		plt.axis([phi_start,phi_end,-delta,delta])
+		title = 'k = '+str(k)
+		plt.title(title)
+		#path = 'figures/042717/SNS_5_pcfd_delta_2_nu_200_root/'
+		path = 'figures/042717/SNS_5_Only_y1_varying_k/delta_2_nu_2000/'
+		name = 'k_'+str(k)+'n_'+str(n)+'N_'+str(N)
+		fig.savefig(path+name+'.png')
+	
+
+
+k_start = 0.2
+k_end = 0.3
+figCount = 10
+	
+hw = 0.1#155789473684
+N = 200
+Z = 0
+phi = 1.
+L = 106.7
+
+########
+k0 = 0.
+k2 = 0.2
+
+delta0 = 200.
+delta2 = 200.
+
+n0 = 5
+n2 = 5
+########
+
+k = k2
+delta = 2.
+n = 5
+nu = 2000.
+
+print('y1y2')
+#print('k',k)
+#print('delta',delta)
+print('n',n)
+#print('nu:',nu)
+#makePlotPhi(nu,delta,Z,k,L,N,n)
+#makePlotk(nu, delta, Z, phi, L, N, n)
+#testFunction(nu, delta, Z, k, L, N, n)
+plotAndSave(k_start, k_end, figCount, Z, k, L, N, n)

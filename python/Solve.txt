@@ -1,0 +1,47 @@
+%matplotlib inline
+import numpy as np
+from matplotlib import pyplot as plt
+# nicer looking default plots
+plt.style.use('bmh')
+import scipy as sc
+
+def eta(delta, nu, E):
+    return 2/nu*np.sqrt(delta*delta - E*E)
+
+def q_e(k,eta):
+    return np.sqrt(1-k*k-1j*eta)
+
+def q_h(k,eta):
+    return np.sqrt(1-k*k+1j*eta)
+
+def xi_e(nu,sgn,k):
+    return np.sqrt(2*nu)*sgn*k
+
+def xi_h(nu,sgn,k):
+    return -np.sqrt(2*nu)*sgn*k
+
+def gamma_e(delta, E):
+    return delta/(E+1i*sqrt(delta*delta-E*E))
+
+def gamma_h(delta, E):
+    return delta/(E-1i*sqrt(delta*delta-E*E))
+
+def a_e(nu,E):
+    return -(nu/2+E)
+
+def a_h(nu,E):
+    return -(nu/2-E)
+	
+
+	
+nu = 40
+delta = 2
+Z = 0
+sgn = 1
+
+N = 2
+k_array = np.linspace(-1.5, 1.5, N)
+E1_array = np.zeros(k_array.shape)
+E2_array = np.zeros(k_array.shape)
+
+eta = 2/nu*np.sqrt(delta*delta - E)
