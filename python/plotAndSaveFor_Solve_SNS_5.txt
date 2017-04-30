@@ -169,15 +169,16 @@ def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
 		plt.axis([phi_start,phi_end,-delta,delta])
 		title = 'nu = '+str(nu) + ', delta='+str(delta)
 		plt.title(title)
-		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int((k-mpmath.floor(k))*10))+'_root/'
+		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int(k*10%10.))+'_root/'
 		name = 'nu_'+str(nu)+'_delta_'+str(delta)+'_n_'+str(n)+'N_'+str(N)
 		fig.savefig(path+name+'.png')
+		plt.close(fig)
 	
 
 
-nu_start = 500.
-nu_end = 1000.
-figCount = 11
+nu_start = 950.
+nu_end = 2000.
+figCount = 22
 	
 hw = 0.1#155789473684
 N = 100
@@ -196,10 +197,10 @@ n0 = 5
 n2 = 3
 ########
 
-k = 0.8
-delta = 2.#delta2
-n = 5
-nu = 40.
+k = 1.2
+delta = 2.2#delta2
+n = 3
+nu = 2200.
 
 
 print('y1y2')
@@ -212,12 +213,8 @@ print('nu:',nu)
 #testFunction(nu, delta, Z, k, L, N, n)
 plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
 
-   
-
-
 ########################################
-	
-def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
+	def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
 	print('plotAndSave')
 	k_array = np.linspace(k_start,k_end,figCount)
 	for k in k_array:
@@ -250,12 +247,13 @@ def plotAndSave(k_start, k_end, figCount, Z, k, L, N, n):
 		path = 'figures/042717/SNS_5_Only_y1_varying_k/delta_2_nu_2000/'
 		name = 'k_'+str(k)+'n_'+str(n)+'N_'+str(N)
 		fig.savefig(path+name+'.png')
+		plt.close(fig)
 	
 
 
-k_start = 0.75
+k_start = 0.8
 k_end = 1.5
-figCount = 16
+figCount = 15
 	
 hw = 0.1#155789473684
 N = 200

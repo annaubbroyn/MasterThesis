@@ -25,17 +25,17 @@ def Y1(a,xi):
 	#return y1(a,xi)+np.sqrt(-1j*1j*a)*y2(a,xi)
 	
 	#Only y1 (fungerer for nu>100):
-	return y1(a,xi)
+	#return y1(a,xi)
 	
 	#y1 from pcfd
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
 	#dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*sp.gamma(0.25+0.5*a))
 	#C1 = (1-np.sin(np.pi*a))/(2*Ua0)
 	#C2 = np.pi/(sp.gamma(0.5+a)*2*Ua0)
-	#U = float(mpmath.pcfd(-a-1./2.,xi))
-	#Um = float(mpmath.pcfd(-a-1./2.,xi))
+	#U = mpmath.pcfd(-a-1./2.,xi)
+	#Um = mpmath.pcfd(-a-1./2.,xi)
 	#V = (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*U+Um)
-	#return C1*U+C2*V
+	#return float(C1*U+C2*V)
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -43,14 +43,14 @@ def Y1(a,xi):
 	#return Ua0*y1(a,xi)+dUa0*y2(a,xi)
 	
 	#Pcfd
-	#return float(mpmath.pcfd(-a-1./2.,xi))
+	return float(mpmath.pcfd(-a-1./2.,xi))
 	
 def Y2(a,xi):
 	#Low field:
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
 	#Only y2:
-	return y2(a,xi)
+	#return y2(a,xi)
 	
 	#y2 from pcfd
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -68,10 +68,15 @@ def Y2(a,xi):
 	#return sp.gamma(0.5+a)/np.pi*((np.sin(np.pi*a)+1)*Ua0*y1(a,xi)+(np.sin(np.pi*a)-1)*dUa0*y2(a,xi))
 	
 	#Pcdf
+	if np.isinf(sp.gamma(1./2.+a)):
+		return np.inf
+	return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
+	
+	#Pcdf uten gamma
 	#if np.isinf(sp.gamma(1./2.+a)):
 	#	return np.inf
-	#return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
-
+	#return np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi)
+	
 def dY1(x,a,c,X):
 	return Y1(a,c*(x+X))
 
@@ -224,6 +229,8 @@ def testFunction(nu, delta, Z, k, L, N, n):
 	plt.legend()
 	plt.show()
 
+
+   	
 def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
 	print('plotAndSave')
 	nu_array = np.linspace(nu_start,nu_end,figCount)
@@ -254,12 +261,13 @@ def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
 		path = 'figures/042717/SNS_5_Only_y1_delta_2-hw_nu_2000-hw_k_'+str(int(k))+'-'+str(int(k*10%10.))+'_root/'
 		name = 'nu_'+str(nu)+'_delta_'+str(delta)+'_n_'+str(n)+'N_'+str(N)
 		fig.savefig(path+name+'.png')
+		plt.close(fig)
 	
 
 
-nu_start = 105.
-nu_end = 105.
-figCount = 1
+nu_start = 950.
+nu_end = 2000.
+figCount = 22
 	
 hw = 0.1#155789473684
 N = 100
@@ -278,13 +286,13 @@ n0 = 5
 n2 = 3
 ########
 
-k = 0.8
-delta = 2.#delta2
+k = 0.2
+delta =	0.3#delta2
 n = 3
-nu = 2000.
+nu = 300.
 
 
-print('y1y2')
+print('pcfd')
 print('k',k)
 print('delta',delta)
 #print('n',n)
@@ -293,7 +301,6 @@ print('nu:',nu)
 makePlotPhi(nu,delta,Z,k,L,N,n)
 #testFunction(nu, delta, Z, k, L, N, n)
 #plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
-
    
 
 
