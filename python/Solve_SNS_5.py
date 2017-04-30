@@ -20,7 +20,7 @@ def y2(a,xi):
 	factor = np.exp(-0.25*xi**2)
 	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
 	
-def Y1(a,xi):
+def Y1(a,xi,factor):
 	#Low field:
 	#return y1(a,xi)+np.sqrt(-1j*1j*a)*y2(a,xi)
 	
@@ -43,9 +43,9 @@ def Y1(a,xi):
 	#return Ua0*y1(a,xi)+dUa0*y2(a,xi)
 	
 	#Pcfd
-	return float(mpmath.pcfd(-a-1./2.,xi))
+	return float(factor*mpmath.pcfd(-a-1./2.,xi))
 	
-def Y2(a,xi):
+def Y2(a,xi,factor):
 	#Low field:
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
@@ -70,18 +70,19 @@ def Y2(a,xi):
 	#Pcdf
 	if np.isinf(sp.gamma(1./2.+a)):
 		return np.inf
-	return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
+	return (np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
+	#return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
 	
 	#Pcdf uten gamma
 	#if np.isinf(sp.gamma(1./2.+a)):
 	#	return np.inf
 	#return np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi)
 	
-def dY1(x,a,c,X):
-	return Y1(a,c*(x+X))
+def dY1(x,a,c,X,factor):
+	return Y1(a,c*(x+X),factor)
 
-def dY2(x,a,c,X):
-	return Y2(a,c*(x+X))
+def dY2(x,a,c,X,factor):
+	return Y2(a,c*(x+X),factor)
 
 def fun(E_,k,nu,delta,L,Z,phi):
 	if isinstance(E_,float):
@@ -115,25 +116,57 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	pre_h1 = 1#np.exp(1j*nu*k+0.5*k**2*nu)
 	pre_h2 = 1#np.exp(-1j*nu*k+0.5*k**2*nu)
 	
-	D1_eL = pre_e1*Y1(a_e,xiL_e)
-	D2_eL = pre_e2*Y2(a_e,xiL_e)
-	D1_hL = pre_h1*Y1(a_h,xiL_h)
-	D2_hL = pre_h2*Y2(a_h,xiL_h)
+	factor = 1
+	functionValue = Y1(a_e,xiL_e,factor)
+	min = 0.1
+	#print('functionValue',functionValue)
+	while (np.isinf(functionValue) or np.isnan(functionValue) or np.absolute(functionValue)>10**(110)):
+		#print('is here')
+		factor *= 10**(-100)
+		functionValue = Y1(a_e,xiL_e,factor)
 	
-	D1_eR = pre_e1*Y1(a_e,xiR_e)
-	D2_eR = pre_e2*Y2(a_e,xiR_e)
-	D1_hR = pre_h1*Y1(a_h,xiR_h)
-	D2_hR = pre_h2*Y2(a_h,xiR_h)
+	#if(factor is not 1):
+	#	print('NewFunctionValue ',functionValue)
 	
-	dD1_eL = pre_e1*misc.derivative(dY1,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
-	dD2_eL = pre_e2*misc.derivative(dY2,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
-	dD1_hL = pre_h1*misc.derivative(dY1,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
-	dD2_hL = pre_h2*misc.derivative(dY2,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
+	D1_eL = pre_e1*Y1(a_e,xiL_e,factor)
+	D2_eL = pre_e2*Y2(a_e,xiL_e,factor)
+	D1_hL = pre_h1*Y1(a_h,xiL_h,factor)
+	D2_hL = pre_h2*Y2(a_h,xiL_h,factor)
 	
-	dD1_eR = pre_e1*misc.derivative(dY1,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
-	dD2_eR = pre_e2*misc.derivative(dY2,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
-	dD1_hR = pre_h1*misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
-	dD2_hR = pre_h2*misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
+	D1_eR = pre_e1*Y1(a_e,xiR_e,factor)
+	D2_eR = pre_e2*Y2(a_e,xiR_e,factor)
+	D1_hR = pre_h1*Y1(a_h,xiR_h,factor)
+	D2_hR = pre_h2*Y2(a_h,xiR_h,factor)
+	
+	dD1_eL = pre_e1*misc.derivative(dY1,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
+	dD2_eL = pre_e2*misc.derivative(dY2,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
+	dD1_hL = pre_h1*misc.derivative(dY1,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
+	dD2_hL = pre_h2*misc.derivative(dY2,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
+	
+	dD1_eR = pre_e1*misc.derivative(dY1,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
+	dD2_eR = pre_e2*misc.derivative(dY2,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
+	dD1_hR = pre_h1*misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
+	dD2_hR = pre_h2*misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
+	
+	"""
+	print('D1_eL',D1_eL)
+	print('D2_eL',D2_eL)
+	print('D1_hL',D1_hL)
+	print('D2_hL',D2_hL)
+	print('D1_eR',D1_eR)
+	print('D2_eR',D2_eR)
+	print('D1_hR',D1_hR)
+	print('D2_hR',D2_hR)
+	print('dD1_eL',dD1_eL)
+	print('dD2_eL',dD2_eL)
+	print('dD1_hL',dD1_hL)
+	print('dD2_hL',dD2_hL)
+	print('dD1_eR',dD1_eR)
+	print('dD2_eR',dD2_eR)
+	print('dD1_hR',dD1_hR)
+	print('dD2_hR',dD2_hR)
+	print(' ')
+	"""
 	
 	ZL = Z
 	ZR = Z
@@ -286,7 +319,7 @@ n0 = 5
 n2 = 3
 ########
 
-k = 0.2
+k = 0.0
 delta =	0.3#delta2
 n = 3
 nu = 300.
