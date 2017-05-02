@@ -23,13 +23,13 @@ def y2(a,xi):
 	factor = np.exp(-0.25*xi**2)
 	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
 	
-def Y1(a,xi,k):
+def Y1(a,xi,factor):
 	#Low field:
 	#return y1(a,xi)+np.sqrt(-1j*1j*a)*y2(a,xi)
 	
 	#Only y1 (fungerer for nu>100):
-	#pre = 1
-	#return pre*y1(a,xi,k)
+	pre = 1
+	return pre*y1(a,xi,k)
 	
 	#y1 from pcfd
 	#nu = -a*2
@@ -51,7 +51,7 @@ def Y1(a,xi,k):
 	#pre = 1
 	#res = mpmath.pcfd(-a-1./2.,xi)
 	#return float((pre*res).real)+1j*float((pre*res).imag)
-	return float(mpmath.pcfd(-a-1./2.,xi))
+	#return float(factor*mpmath.pcfd(-a-1./2.,xi))
 	
 	#Pcfu
 	#pre = 1
@@ -59,12 +59,12 @@ def Y1(a,xi,k):
 	#print('res',res)
 	#return float((pre*res).real)+1j*float((pre*res).imag)
 	
-def Y2(a,xi,k):
+def Y2(a,xi,factor):
 	#Low field:
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
 	#Only y2:
-	#return y2(a,xi)
+	return y2(a,xi)
 	
 	#y2 from pcfd
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -87,19 +87,20 @@ def Y2(a,xi,k):
 	#return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
 	
 	#Pcdf uten gamma
-	if np.isinf(sp.gamma(1./2.+a)):
-		return np.inf
-	return np.sin(np.pi*a)*Y1(a,xi,k)+Y1(a,-xi,k)
+	#if np.isinf(sp.gamma(1./2.+a)):
+	#	return np.inf
+	#return np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor)
 	
 
 	
-nu = 300.
+nu = 2052.
 
 a = -nu/2
-k = 0.0
+k = 0.8
 L = 106.7
 xiL = np.sqrt(2/nu)*(L+k*nu)
 xi0 = np.sqrt(2/nu)*k*nu
-xi = xi0
-
-print(Y1(a,xi,k))
+xi = xiL
+factor = 10**(-0.43*nu)
+print(Y1(a,xi,factor))
+print('gamma(0.75+0.5a)',mpmath.gamma(3./4.+0.5*a))

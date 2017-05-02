@@ -7,7 +7,7 @@ from scipy import special as sp
 from scipy import misc
 from scipy.linalg import det
 import mpmath
-import math
+#import math
 
 def y1(a,xi):
 	res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
@@ -20,22 +20,23 @@ def y2(a,xi):
 	factor = np.exp(-0.25*xi**2)
 	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
 	
-def Y1(a,xi,factor):
+def Y1(a,xi):
 	#Low field:
 	#return y1(a,xi)+np.sqrt(-1j*1j*a)*y2(a,xi)
 	
 	#Only y1 (fungerer for nu>100):
-	#return y1(a,xi)
+	return y1(a,xi)
+	
 	
 	#y1 from pcfd
-	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
-	#dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*sp.gamma(0.25+0.5*a))
-	#C1 = (1-np.sin(np.pi*a))/(2*Ua0)
-	#C2 = np.pi/(sp.gamma(0.5+a)*2*Ua0)
-	#U = mpmath.pcfd(-a-1./2.,xi)
-	#Um = mpmath.pcfd(-a-1./2.,xi)
-	#V = (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*U+Um)
-	#return float(C1*U+C2*V)
+	Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*mpmath.gamma(3./4.+0.5*a))
+	C1 = (1-np.sin(np.pi*a))/(2*Ua0)
+	C2 = 1/(2*Ua0)
+	U = mpmath.pcfu(a,xi)
+	Um = mpmath.pcfu(a,-xi)
+	V = np.sin(np.pi*a)*U+Um
+	return float(C1*U+C2*V)
+	
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -43,24 +44,26 @@ def Y1(a,xi,factor):
 	#return Ua0*y1(a,xi)+dUa0*y2(a,xi)
 	
 	#Pcfd
-	return float(factor*mpmath.pcfd(-a-1./2.,xi))
+	#factor = 10**(-240)
+	#return float(factor*mpmath.pcfd(-a-1./2.,xi))
 	
-def Y2(a,xi,factor):
+def Y2(a,xi):
 	#Low field:
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
 	#Only y2:
 	#return y2(a,xi)
 	
+	
 	#y2 from pcfd
-	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
-	#dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*sp.gamma(0.25+0.5*a))
-	#C1 = (1+np.sin(np.pi*a))/(2*dUa0)
-	#C2 = -np.pi/(sp.gamma(0.5+a)*2*dUa0)
-	#U = float(mpmath.pcfd(-a-1./2.,xi))
-	#Um = float(mpmath.pcfd(-a-1./2.,xi))
-	#V = (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*U+Um)
-	#return C1*U+C2*V
+	dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*mpmath.gamma(0.25+0.5*a))
+	C1 = (1+np.sin(np.pi*a))/(2*dUa0)
+	C2 = -1/(2*dUa0)
+	U = mpmath.pcfu(a,xi)
+	Um = mpmath.pcfu(a,-xi)
+	V = np.sin(np.pi*a)*U+Um
+	return float(C1*U+C2*V)
+	
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -68,40 +71,49 @@ def Y2(a,xi,factor):
 	#return sp.gamma(0.5+a)/np.pi*((np.sin(np.pi*a)+1)*Ua0*y1(a,xi)+(np.sin(np.pi*a)-1)*dUa0*y2(a,xi))
 	
 	#Pcdf
-	if np.isinf(sp.gamma(1./2.+a)):
-		return np.inf
-	return (np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
+	#if np.isinf(sp.gamma(1./2.+a)):
+	#	return np.inf
+	#return (np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
 	#return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
 	
 	#Pcdf uten gamma
+	#factor = 10**(-240)
 	#if np.isinf(sp.gamma(1./2.+a)):
 	#	return np.inf
-	#return np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi)
+	#return np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor)
 	
-def dY1(x,a,c,X,factor):
-	return Y1(a,c*(x+X),factor)
+def dY1(x,a,c,X):
+	return Y1(a,c*(x+X))
 
-def dY2(x,a,c,X,factor):
-	return Y2(a,c*(x+X),factor)
+def dY2(x,a,c,X):
+	return Y2(a,c*(x+X))
 
 def fun(E_,k,nu,delta,L,Z,phi):
+
+	E = E_[0]
+	"""
 	if isinstance(E_,float):
 		E = E_
 	else:
 		E = E_[0]
     
-	if abs(E)>abs(delta):
-		return 1
+	
 	
 	if np.isnan(E) or np.isinf(E):
 		print('E is ',E)
+		print('E_ is ',E_)
+		print(' ')
 		return 1
+	"""
+	
+	if abs(E)>abs(delta):
+		return [10000*(abs(E)-abs(delta)),10000*(abs(E)-abs(delta))]
 	
 	a_e = -(E+nu/2)
 	a_h = -(-E+nu/2)	
 	
-	kp=np.sqrt(1+2*E/nu)
-	km=np.sqrt(1-2*E/nu)
+	#kp=np.sqrt(1+2*E/nu)
+	#km=np.sqrt(1-2*E/nu)
 	kx = np.sqrt(1+1j*1j*k*k)
 	kx_e = kx#np.sqrt(1+1j*1j*k*k+2*E/nu)#kp+1j*k##
 	kx_h = -kx#np.sqrt(1+1j*1j*k*k-2*E/nu)#km-1j*k
@@ -116,37 +128,25 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	pre_h1 = 1#np.exp(1j*nu*k+0.5*k**2*nu)
 	pre_h2 = 1#np.exp(-1j*nu*k+0.5*k**2*nu)
 	
-	factor = 1
-	functionValue = Y1(a_e,xiL_e,factor)
-	min = 0.1
-	#print('functionValue',functionValue)
-	while (np.isinf(functionValue) or np.isnan(functionValue) or np.absolute(functionValue)>10**(110)):
-		#print('is here')
-		factor *= 10**(-100)
-		functionValue = Y1(a_e,xiL_e,factor)
+	D1_eL = pre_e1*Y1(a_e,xiL_e)
+	D2_eL = pre_e2*Y2(a_e,xiL_e)
+	D1_hL = pre_h1*Y1(a_h,xiL_h)
+	D2_hL = pre_h2*Y2(a_h,xiL_h)
 	
-	#if(factor is not 1):
-	#	print('NewFunctionValue ',functionValue)
+	D1_eR = pre_e1*Y1(a_e,xiR_e)
+	D2_eR = pre_e2*Y2(a_e,xiR_e)
+	D1_hR = pre_h1*Y1(a_h,xiR_h)
+	D2_hR = pre_h2*Y2(a_h,xiR_h)
 	
-	D1_eL = pre_e1*Y1(a_e,xiL_e,factor)
-	D2_eL = pre_e2*Y2(a_e,xiL_e,factor)
-	D1_hL = pre_h1*Y1(a_h,xiL_h,factor)
-	D2_hL = pre_h2*Y2(a_h,xiL_h,factor)
+	dD1_eL = pre_e1*misc.derivative(dY1,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
+	dD2_eL = pre_e2*misc.derivative(dY2,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
+	dD1_hL = pre_h1*misc.derivative(dY1,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
+	dD2_hL = pre_h2*misc.derivative(dY2,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
 	
-	D1_eR = pre_e1*Y1(a_e,xiR_e,factor)
-	D2_eR = pre_e2*Y2(a_e,xiR_e,factor)
-	D1_hR = pre_h1*Y1(a_h,xiR_h,factor)
-	D2_hR = pre_h2*Y2(a_h,xiR_h,factor)
-	
-	dD1_eL = pre_e1*misc.derivative(dY1,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
-	dD2_eL = pre_e2*misc.derivative(dY2,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
-	dD1_hL = pre_h1*misc.derivative(dY1,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
-	dD2_hL = pre_h2*misc.derivative(dY2,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
-	
-	dD1_eR = pre_e1*misc.derivative(dY1,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
-	dD2_eR = pre_e2*misc.derivative(dY2,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k,factor),dx=0.001)
-	dD1_hR = pre_h1*misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
-	dD2_hR = pre_h2*misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k,factor),dx=0.001)
+	dD1_eR = pre_e1*misc.derivative(dY1,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
+	dD2_eR = pre_e2*misc.derivative(dY2,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
+	dD1_hR = pre_h1*misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
+	dD2_hR = pre_h2*misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
 	
 	"""
 	print('D1_eL',D1_eL)
@@ -193,7 +193,8 @@ def fun(E_,k,nu,delta,L,Z,phi):
 					   [0, 0, dD1_hR, dD2_hR, 0, 0, (-ZR-1j)*qh, (-ZR+1j)*qe]])
 	
 	D = det(matrix)
-	return np.absolute(D)
+	
+	return [D.real,D.imag]
 
 def makePlotPhi(nu, delta, Z, k, L, N, n):
 	print('makePlotPhi')
@@ -235,12 +236,12 @@ def makePlotk(nu, delta, Z, phi, L, N, n):
 	for j in range(n):
 		print('count:',j+1,'/',n)
 		for i in range(N):		
-			rootResult = opt.root(fun,e0[j],args=(k_array[i],nu,delta,L,Z,phi))
+			rootResult = opt.root(fun,e0[j],method = 'Im',args=(k_array[i],nu,delta,L,Z,phi))
 			if rootResult.success:
 				E_array[i] = rootResult.x[0]
 			else:
 				E_array[i] = 2*delta #this is a quick fix
-			#E_array[i] = opt.fsolve(fun,e0[j],args=(k_array[i],nu,delta,L,Z,phi))[0]
+			E_array[i] = opt.fsolve(fun,e0[j],args=(k_array[i],nu,delta,L,Z,phi))[0]
 		plt.plot(k_array,E_array,'.b')
 	plt.axis([k_start,k_end,0.05,delta-0.05])	
 	plt.show()
@@ -281,7 +282,7 @@ def plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n):
 		for j in range(n):
 			print('count:',j+1,'/',n)
 			for i in range(N):	
-				rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
+				rootResult = opt.root(fun,e0[j],method = 'broyden1',args=(k,nu,delta,L,Z,phi_array[i]))
 				if rootResult.success:
 					E_array[i] = rootResult.x[0]
 				else:
@@ -320,9 +321,9 @@ n2 = 3
 ########
 
 k = 0.0
-delta =	0.3#delta2
+delta =	0.2#delta2
 n = 3
-nu = 300.
+nu = 200.
 
 
 print('pcfd')
