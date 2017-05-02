@@ -29,6 +29,7 @@ def Y1(a,xi):
 	
 	
 	#y1 from pcfd
+	"""
 	Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*mpmath.gamma(3./4.+0.5*a))
 	C1 = (1-np.sin(np.pi*a))/(2*Ua0)
 	C2 = 1/(2*Ua0)
@@ -36,7 +37,7 @@ def Y1(a,xi):
 	Um = mpmath.pcfu(a,-xi)
 	V = np.sin(np.pi*a)*U+Um
 	return float(C1*U+C2*V)
-	
+	"""
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -52,10 +53,11 @@ def Y2(a,xi):
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
 	#Only y2:
-	#return y2(a,xi)
+	return y2(a,xi)
 	
 	
 	#y2 from pcfd
+	"""
 	dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*mpmath.gamma(0.25+0.5*a))
 	C1 = (1+np.sin(np.pi*a))/(2*dUa0)
 	C2 = -1/(2*dUa0)
@@ -63,7 +65,7 @@ def Y2(a,xi):
 	Um = mpmath.pcfu(a,-xi)
 	V = np.sin(np.pi*a)*U+Um
 	return float(C1*U+C2*V)
-	
+	"""
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -128,6 +130,8 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	pre_h1 = 1#np.exp(1j*nu*k+0.5*k**2*nu)
 	pre_h2 = 1#np.exp(-1j*nu*k+0.5*k**2*nu)
 	
+	
+	
 	D1_eL = pre_e1*Y1(a_e,xiL_e)
 	D2_eL = pre_e2*Y2(a_e,xiL_e)
 	D1_hL = pre_h1*Y1(a_h,xiL_h)
@@ -147,6 +151,8 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	dD2_eR = pre_e2*misc.derivative(dY2,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*k),dx=0.001)
 	dD1_hR = pre_h1*misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
 	dD2_hR = pre_h2*misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
+	
+	
 	
 	"""
 	print('D1_eL',D1_eL)
@@ -173,8 +179,10 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	phiL = 0
 	phiR = phi
 	
-	qe = np.sqrt(1-k*k+1j*2/nu*np.sqrt(delta*delta-E*E))
-	qh = np.sqrt(1-k*k-1j*2/nu*np.sqrt(delta*delta-E*E))
+	#qe = np.sqrt(1-k*k+1j*2/nu*np.sqrt(delta*delta-E*E))
+	#qh = np.sqrt(1-k*k-1j*2/nu*np.sqrt(delta*delta-E*E))
+	qe = 1
+	qh = 1
 
 	eta = np.arccos(E/delta)
 
@@ -182,6 +190,7 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	gamma_eR = np.exp(1j*(-eta-phiR))
 	gamma_hL = np.exp(1j*(eta-phiL))
 	gamma_hR = np.exp(1j*(eta-phiR))
+	
 	   
 	matrix = np.array([[D1_eL, D2_eL, 0, 0, gamma_hL, gamma_eL, 0, 0],
 					   [0, 0, D1_hL, D2_hL, 1, 1, 0, 0],
@@ -209,6 +218,7 @@ def makePlotPhi(nu, delta, Z, k, L, N, n):
 		print('count:',j+1,'/',n)
 		
 		for i in range(N):
+			#rootResult = opt.newton_krylov(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
 			
 			rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))
 			if rootResult.success:
@@ -217,7 +227,7 @@ def makePlotPhi(nu, delta, Z, k, L, N, n):
 				E_array[i] = 2*delta #this is a quick fix
 			
 			#E_array[i] = opt.fsolve(fun,e0[j],args=(k,nu,delta,L,Z,phi_array[i]))[0]
-		
+			#E_array[i] = opt.newton(fun,[-delta+j*delta],j*delta,args=(k,nu,delta,L,Z,phi_array[i]))
 		plt.plot(phi_array,E_array,'.b')
 	plt.axis([phi_start,phi_end,-delta,delta])
 	title = 'nu = '+str(nu)
@@ -320,10 +330,10 @@ n0 = 5
 n2 = 3
 ########
 
-k = 0.0
-delta =	0.2#delta2
-n = 3
-nu = 200.
+k = 0.2
+delta =	0.19#delta2
+n = 2
+nu = 190.
 
 
 print('pcfd')
