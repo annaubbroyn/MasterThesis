@@ -29,7 +29,7 @@ def Y1(a,xi):
 	
 	
 	#y1 from pcfd
-	"""
+	
 	Ua0 = np.sqrt(np.pi)/(mpmath.power(2,0.5*a+0.25)*mpmath.gamma(3./4.+0.5*a))
 	C1 = (1-np.sin(np.pi*a))/(2*Ua0)
 	C2 = 1/(2*Ua0)
@@ -37,7 +37,7 @@ def Y1(a,xi):
 	Um = mpmath.pcfu(a,-xi)
 	V = np.sin(np.pi*a)*U+Um
 	return float(C1*U+C2*V)
-	"""
+	
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -46,7 +46,7 @@ def Y1(a,xi):
 	
 	#Pcfd
 	#factor = 10**(-240)
-	return float(mpmath.pcfd(-a-1./2.,xi))
+	#return float(factor*mpmath.pcfd(-a-1./2.,xi))
 	
 def Y2(a,xi):
 	#Low field:
@@ -57,7 +57,7 @@ def Y2(a,xi):
 	
 	
 	#y2 from pcfd
-	"""
+	
 	dUa0 = -np.sqrt(np.pi)/(mpmath.power(2,0.5*a-0.25)*mpmath.gamma(0.25+0.5*a))
 	C1 = (1+np.sin(np.pi*a))/(2*dUa0)
 	C2 = -1/(2*dUa0)
@@ -65,7 +65,7 @@ def Y2(a,xi):
 	Um = mpmath.pcfu(a,-xi)
 	V = np.sin(np.pi*a)*U+Um
 	return float(C1*U+C2*V)
-	"""
+	
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -73,10 +73,10 @@ def Y2(a,xi):
 	#return sp.gamma(0.5+a)/np.pi*((np.sin(np.pi*a)+1)*Ua0*y1(a,xi)+(np.sin(np.pi*a)-1)*dUa0*y2(a,xi))
 	
 	#Pcdf
-	if np.isinf(sp.gamma(1./2.+a)):
-		return np.inf
+	#if np.isinf(sp.gamma(1./2.+a)):
+	#	return np.inf
 	#return (np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
-	return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
+	#return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
 	
 	#Pcdf uten gamma
 	#factor = 10**(-240)
@@ -131,15 +131,6 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	pre_h2 = 1#np.exp(-1j*nu*k+0.5*k**2*nu)
 	
 	
-	print(a_e)
-	print(a_h)
-	print(xiL_e)
-	print(xiL_h)
-	print(xiR_e)
-	print(xiR_h)
-	print(' ')
-	
-	
 	
 	D1_eL = pre_e1*Y1(a_e,xiL_e)
 	D2_eL = pre_e2*Y2(a_e,xiL_e)
@@ -161,10 +152,10 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	dD1_hR = pre_h1*misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
 	dD2_hR = pre_h2*misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*k),dx=0.001)
 	
+	
+	
 	"""
-	
-	
-	print('D1_eL',D1_eL+0*1j)
+	print('D1_eL',D1_eL)
 	print('D2_eL',D2_eL)
 	print('D1_hL',D1_hL)
 	print('D2_hL',D2_hL)
@@ -181,8 +172,8 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	print('dD1_hR',dD1_hR)
 	print('dD2_hR',dD2_hR)
 	print(' ')
-	
 	"""
+	
 	ZL = Z
 	ZR = Z
 	phiL = 0
@@ -253,7 +244,7 @@ def makePlotk(nu, delta, Z, phi, L, N, n):
 	for j in range(n):
 		print('count:',j+1,'/',n)
 		for i in range(N):		
-			rootResult = opt.root(fun,e0[j],args=(k_array[i],nu,delta,L,Z,phi))
+			rootResult = opt.root(fun,e0[j],method = 'Im',args=(k_array[i],nu,delta,L,Z,phi))
 			if rootResult.success:
 				E_array[i] = rootResult.x[0]
 			else:
@@ -321,7 +312,7 @@ nu_end = 2000.
 figCount = 22
 	
 hw = 0.1#155789473684
-N = 300
+N = 100
 Z = 0
 phi = 1.
 L = 106.7
@@ -337,19 +328,19 @@ n0 = 5
 n2 = 3
 ########
 
-k = 0.0
-delta =	2.#delta2
-n = 5
-nu = 40.
+k = 0.8
+delta =	10.#delta2
+n = 2
+nu = 10000.
 
 
 print('pcfd')
-#print('k',k)
+print('k',k)
 print('delta',delta)
 #print('n',n)
 print('nu:',nu)
-makePlotk(nu, delta, Z, phi, L, N, n)
-#makePlotPhi(nu,delta,Z,k,L,N,n)
+#makePlotk(nu, delta, Z, phi, L, N, n)
+makePlotPhi(nu,delta,Z,k,L,N,n)
 #testFunction(nu, delta, Z, k, L, N, n)
 #plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
    

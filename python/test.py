@@ -28,19 +28,23 @@ def Y1(a,xi,factor):
 	#return y1(a,xi)+np.sqrt(-1j*1j*a)*y2(a,xi)
 	
 	#Only y1 (fungerer for nu>100):
-	pre = 1
-	return pre*y1(a,xi,k)
+	#pre = 1
+	#return pre*y1(a,xi,k)
 	
 	#y1 from pcfd
-	#nu = -a*2
-	#pre = np.exp(-1j*nu*k+0.5*k**2*nu)
-	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
-	#dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*sp.gamma(0.25+0.5*a))
-	#C1 = (1-np.sin(np.pi*a))/(2*Ua0)
-	#C2 = np.pi/(sp.gamma(0.5+a)*2*Ua0)
-	#U = mpmath.pcfd(-a-1./2.,xi)
-	#Um = mpmath.pcfd(-a-1./2.,xi)
-	#V = (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*U+Um)
+	print(1)
+	Ua0_inv = (mpmath.power(2,(0.5*a+0.25))*mpmath.gamma(3./4.+0.5*a))/np.sqrt(np.pi)
+	C1 = Ua0_inv*(1-np.sin(np.pi*a))/2
+	C2 = Ua0_inv/2
+	print(2)
+	U = mpmath.pcfu(a,xi)
+	print(3)
+	Um = mpmath.pcfu(a,-xi)
+	print(4)
+	V = np.sin(np.pi*a)*U+Um
+	result = C1*U+C2*Um
+	print('gamma',0.5*a+0.25)
+	return float(result)
 
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -64,17 +68,16 @@ def Y2(a,xi,factor):
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
 	#Only y2:
-	return y2(a,xi)
+	#return y2(a,xi)
 	
 	#y2 from pcfd
-	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
-	#dUa0 = -np.sqrt(np.pi)/(2**(0.5*a-0.25)*sp.gamma(0.25+0.5*a))
-	#C1 = (1+np.sin(np.pi*a))/(2*dUa0)
-	#C2 = -np.pi/(sp.gamma(0.5+a)*2*dUa0)
-	#U = float(mpmath.pcfd(-a-1./2.,xi))
-	#Um = float(mpmath.pcfd(-a-1./2.,xi))
-	#V = (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*U+Um)
-	#return C1*U+C2*V
+	dUa0_inv = -(2**(0.5*a-0.25)*mpmath.gamma(0.25+0.5*a))/np.sqrt(np.pi)
+	C1 = dUa0_inv*(1+np.sin(np.pi*a))/2
+	C2 = -dUa0_inv/2
+	U = mpmath.pcfu(a,xi)
+	Um = mpmath.pcfu(a,-xi)
+	V = np.sin(np.pi*a)*U+Um
+	return float(C1*U+C2*V)
 	
 	#High field:
 	#Ua0 = np.sqrt(np.pi)/(2**(0.5*a+0.25)*sp.gamma(3./4.+0.5*a))
@@ -93,7 +96,7 @@ def Y2(a,xi,factor):
 	
 
 	
-nu = 2052.
+nu = 15000.
 
 a = -nu/2
 k = 0.8
@@ -102,5 +105,7 @@ xiL = np.sqrt(2/nu)*(L+k*nu)
 xi0 = np.sqrt(2/nu)*k*nu
 xi = xiL
 factor = 10**(-0.43*nu)
-print(Y1(a,xi,factor))
+print('pcfu(a,xi)',mpmath.pcfu(a,xi))
+print('pcfu(a,-xi)',mpmath.pcfu(a,-xi))
 print('gamma(0.75+0.5a)',mpmath.gamma(3./4.+0.5*a))
+print('Y1',Y1(a,xi,factor))

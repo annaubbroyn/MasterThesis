@@ -1,8 +1,4 @@
 import numpy as np
-from matplotlib import pyplot as plt
-# nicer looking default plots
-plt.style.use('bmh')
-from scipy import optimize as opt
 from scipy import special as sp
 from scipy import misc
 from scipy.linalg import det
@@ -22,7 +18,7 @@ def y2(a,xi):
 def Y1(a,xi,method):
 	if method == 'y1y2':
 		return y1(a,xi)
-	elif method == 'pcfu':
+	elif method == 'pcfuToy1y2':
 		Ua0 = np.sqrt(np.pi)/(mpmath.power(2,0.5*a+0.25)*mpmath.gamma(3./4.+0.5*a))
 		C1 = (1-np.sin(np.pi*a))/(2*Ua0)
 		C2 = 1/(2*Ua0)
@@ -30,11 +26,13 @@ def Y1(a,xi,method):
 		Um = mpmath.pcfu(a,-xi)
 		V = np.sin(np.pi*a)*U+Um
 		return float(C1*U+C2*V)
+	elif method == 'pcfu':
+		return float(mpmath.pcfu(a,xi))
 			
 def Y2(a,xi,method):
 	if method == 'y1y2':
 		return y2(a,xi)
-	elif method == 'pcfu':
+	elif method == 'pcfuToy1y2':
 		dUa0 = -np.sqrt(np.pi)/(mpmath.power(2,0.5*a-0.25)*mpmath.gamma(0.25+0.5*a))
 		C1 = (1+np.sin(np.pi*a))/(2*dUa0)
 		C2 = -1/(2*dUa0)
@@ -42,6 +40,10 @@ def Y2(a,xi,method):
 		Um = mpmath.pcfu(a,-xi)
 		V = np.sin(np.pi*a)*U+Um
 		return float(C1*U+C2*V)
+	elif method == 'pcfu':
+		if np.isinf(sp.gamma(1./2.+a)):
+			return np.inf
+		return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi,method)+Y1(a,-xi,method))
 	
 def dY1(x,a,c,X,method):
 	return Y1(a,c*(x+X),method)
@@ -116,48 +118,29 @@ def fun(E_,phi,B,ky,Ef,L,Z,method):
 	D = det(matrix)
 	
 	return [D.real,D.imag]
-
-def freeEnergy(phi,k,nu,delta,L,Z,kBT):
-	n=10
-	buf = 0.001*delta
-	e0 = np.linspace(-delta+buf,delta-buf,n)
+	
+def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method):
+	n=2
+	de0 = 1/float(n+1)
+	e0 = np.linspace(-1+buf,1-buf,n)
 	E_array = []
-	maxDiff = delta*10**(-6)
+	maxDiff = 10**(-6)
 	for j in range(n):
-		rootResult = opt.root(fun,e0[j],args=(k,nu,delta,L,Z,phi))
-		diff = delta
+		rootResult = opt.root(fun,e0[j],args=(phi,B,ky,Ef,L,Z,method))
+		diff = 1
 		if len(E_array)>0:
 			diff = rootResult - E_array[-1]
 		if rootResult.success and diff>maxDiff:
 			E_array.append(rootResult.x[0])
 	result = 0
 	for i in range(len(E_array)):
-		result += np.log(2*np.cosh(0.5*E_array[i]/(delta*kBT)))
+		result += np.log(2*np.cosh(0.5*E_array[i]/kBT))
 	return result
 
-def dFreeEnergy(k,phi,nu,delta,L,Z,kBT):
-	return misc.derivative(freeEnergy,phi,args=(k,nu,delta,L,Z,kBT),dx=0.001)
+def dFreeEnergy(ky,phi,B,Ef,L,Z,kBT,method):
+	return misc.derivative(freeEnergy,phi,args=(ky,B,Ef,L,Z,kBT,method),dx=0.001)
 	
-def totalCurrent(phi,nu,delta,L,Z,kBT):
-	kmin = -1.
-	kmin = 1.
-	return integrate.quad(dFreeEnergy,kmin,kmax,args=(phi,nu,delta,L,Z,kBT)).y
-
-def plotCurrent(nu,delta,L,Z,kBT,N):
-	phi_start = -3*np.pi
-	phi_end = 3*np.pi
-	phi_array = np.linspace(phi_start, phi_end, N)
-	I_array = np.zeros(phi_array.shape)
-	for i in range(N):
-		I_array[i] = totalCurrent(phi_arra[i],ni,delta,L,Z,kBT)
-	plt.figure()
-	plt.plot(phi_array,I_array,'.')
-	plt.title('Total Current for nu ='+str(nu))
-	plt.show()
-
-nu = 200000.
-delta = 200.
-L = 106.7
-kBT = delta
-N = 100
-plotCurrent(nu,delta,L,Z,kBT,N)
+def totalCurrent(phi,B,Ef,L,Z,kBT,method):
+	kyMin = -0.5
+	kyMax = 0.5
+	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,B,Ef,L,Z,kBT,method)).y
