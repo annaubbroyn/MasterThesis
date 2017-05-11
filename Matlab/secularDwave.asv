@@ -1,0 +1,12 @@
+function freeEnergy = freeEnergy(phi,alphaL,alphaR,theta)
+    syms E_syms
+    etaL = acos(E:_/cos(2*(theta-alphaL)));
+    etaR = acos(E/cos(2*(theta-alphaR)));
+    assume(E,'real')
+    n = 1;
+    secularDwave = linspace(0,0,n);
+    for i = 1:n
+        secularDwave(i) = vpasolve(cos(etaL + etaR)-cos(phi)==0,E,[0 1],'random',true);
+    end
+    
+end

@@ -25,7 +25,7 @@ def Y1(a,xi):
 	#return y1(a,xi)+np.sqrt(-1j*1j*a)*y2(a,xi)
 	
 	#Only y1 (fungerer for nu>100):
-	#return y1(a,xi)
+	return y1(a,xi)
 	
 	
 	#y1 from pcfd
@@ -46,14 +46,14 @@ def Y1(a,xi):
 	
 	#Pcfd
 	#factor = 10**(-240)
-	return float(mpmath.pcfd(-a-1./2.,xi))
+	#return float(mpmath.pcfd(-a-1./2.,xi))
 	
 def Y2(a,xi):
 	#Low field:
 	#return y1(a,xi)-np.sqrt(-1j*1j*a)*y2(a,xi)	
 	
 	#Only y2:
-	#return y2(a,xi)
+	return y2(a,xi)
 	
 	
 	#y2 from pcfd
@@ -73,10 +73,10 @@ def Y2(a,xi):
 	#return sp.gamma(0.5+a)/np.pi*((np.sin(np.pi*a)+1)*Ua0*y1(a,xi)+(np.sin(np.pi*a)-1)*dUa0*y2(a,xi))
 	
 	#Pcdf
-	if np.isinf(sp.gamma(1./2.+a)):
-		return np.inf
+	#if np.isinf(sp.gamma(1./2.+a)):
+	#	return np.inf
 	#return (np.sin(np.pi*a)*Y1(a,xi,factor)+Y1(a,-xi,factor))
-	return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
+	#return (sp.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*Y1(a,xi)+Y1(a,-xi))
 	
 	#Pcdf uten gamma
 	#factor = 10**(-240)
@@ -130,7 +130,7 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	pre_h1 = 1#np.exp(1j*nu*k+0.5*k**2*nu)
 	pre_h2 = 1#np.exp(-1j*nu*k+0.5*k**2*nu)
 	
-	
+	"""
 	print(a_e)
 	print(a_h)
 	print(xiL_e)
@@ -138,7 +138,7 @@ def fun(E_,k,nu,delta,L,Z,phi):
 	print(xiR_e)
 	print(xiR_h)
 	print(' ')
-	
+	"""
 	
 	
 	D1_eL = pre_e1*Y1(a_e,xiL_e)
@@ -321,7 +321,7 @@ nu_end = 2000.
 figCount = 22
 	
 hw = 0.1#155789473684
-N = 300
+N = 100
 Z = 0
 phi = 1.
 L = 106.7
@@ -338,9 +338,9 @@ n2 = 3
 ########
 
 k = 0.0
-delta =	2.#delta2
+delta =	1.#delta2
 n = 5
-nu = 40.
+nu = 1000.
 
 
 print('pcfd')
@@ -348,8 +348,8 @@ print('pcfd')
 print('delta',delta)
 #print('n',n)
 print('nu:',nu)
-makePlotk(nu, delta, Z, phi, L, N, n)
-#makePlotPhi(nu,delta,Z,k,L,N,n)
+#makePlotk(nu, delta, Z, phi, L, N, n)
+makePlotPhi(nu,delta,Z,k,L,N,n)
 #testFunction(nu, delta, Z, k, L, N, n)
 #plotAndSave(nu_start, nu_end, figCount, Z, k, L, N, n)
    
