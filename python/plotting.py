@@ -50,9 +50,9 @@ def makePlotEvsPhi(B,ky,Ef,L,Z,N,n,method):
 	plt.plot(phi_array,time_array)
 	plt.show()
 	
-def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable):
+def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,parabolic_method,variable):
 	print('plotAndSaveEvsPhi')
-	print('method',method)
+	print('method',parabolic_method)
 	if variable is not 'ky':
 		print('ky',ky)
 	if variable is not 'B':
@@ -72,116 +72,71 @@ def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable):
 		elif variable is 'Ef':
 			Ef = x
 			print('Ef: ',Ef)
-		de0 = 0.#2/float(n+1)
+		
+		start = time.time()
+		
+		de0 = 0.01
+		
 		phi_start = -3*np.pi
 		phi_end = 3*np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
-		E_array = np.zeros(phi_array.shape)
-		temp_E_array = np.zeros(phi_array.shape)
-		#plot_temp = np.zeros(phi_array.shape)
-		dE_array = np.zeros(phi_array.shape)
+		
+		E_array = np.zeros((n,N))
 		e0 = np.linspace(-1+de0,1-de0,n)
-		#e0 = [-1+de0]
-		fig = plt.figure()
-		for j in range(n):
-			print('count:',j+1,'/',n)
-			for i in range(N):
-				if i == 0:
-					e0_now = e0[j]
-					rootResult = opt.root(fun,e0_now,args=(phi_array[i],B,ky,Ef,L,Z,method))
-					if e0_now > 0.:
-						while not rootResult.success and e0_now>=-1.:
-							e0_now -= 0.2
-							rootResult = opt.root(fun,e0_now,args=(phi_array[i],B,ky,Ef,L,Z,method))
-					if e0_now < 0.:
-						while not rootResult.success and e0_now<=1.:
-							e0_now += 0.2
-							rootResult = opt.root(fun,e0_now,args=(phi_array[i],B,ky,Ef,L,Z,method))
-				else:
-					e0_now = temp_E_array[i-1]+dE_array[i-1]
-					rootResult = opt.root(fun,e0_now,args=(phi_array[i],B,ky,Ef,L,Z,method))
-				
-				#if i is 0 or rootResult.success:
-				temp_E_array[i] = rootResult.x[0]
-				#else:
-				#	temp_E_array[i] = temp_E_array[i-1]
-				
-				aboveZero = False
-				dphi=(phi_end-phi_start)/N
-				index = int((phi_array[i]-np.pi-phi_start)/dphi) + 5;
-				if temp_E_array[index] > 0.:
-					aboveZero = True
-
-				if i == 0:
-					#print('a')
-					dE_array[i] = 0.
-					#temp_E_array[i] = min(0.9998,temp_E_array[i])
-					#temp_E_array[i] = max(-0.9998,temp_E_array[i])
-				elif temp_E_array[i]>=0.99999:
-					#print('b')
-					#print('de_array[i-1] is ',dE_array[i-1])
-					if dE_array[i-1]>0.0 and aboveZero:
-						#print('is in if')
-						temp_E_array[i] = -1.
-						dE_array[i] = 0.0001
-					else:
-						#print('is in else')
-						#while not rootResult.success and e0_now>-1. and temp_E_array[i-2] > 0.:
-						#	e0_now -= 0.1
-						#	rootResult = opt.root(fun,e0_now,args=(phi_array[i],B,ky,Ef,L,Z,method))
-						#if rootResult.success:
-						#	temp_E_array[i] = rootResult.x[0]
-						#	dE_array[i]=rootResult.x[0]-temp_E_array[i-1]
-						#else:
-						temp_E_array[i] = 1.
-						dE_array[i] = -0.0001
-				elif temp_E_array[i]<=-0.99999:
-					#print('c')
-					if dE_array[i-1]<0.0 and not aboveZero:
-						temp_E_array[i] = 1.
-						dE_array[i] = -0.0001
-					else:
-						#while not rootResult.success and e0_now<1. and temp_E_array[i-2] < 0.:
-						#	e0_now += 0.1
-						#	rootResult = opt.root(fun,e0_now,args=(phi_array[i],B,ky,Ef,L,Z,method))
-						#if rootResult.success:
-						#	temp_E_array[i] = rootResult.x[0]
-						#	dE_array[i]=rootResult.x[0]-temp_E_array[i-1]
-						#else:
-						temp_E_array[i] = -1.
-						dE_array[i] = 0.0001
-				elif rootResult.success:
-					dE_array[i] = rootResult.x[0]-temp_E_array[i-1]
-				else:
-					#print('d')
-					temp_E_array[i] = temp_E_array[i-1]
-					dE_array[i] = 0.
-				
-				dE_array[i] = min(dE_array[i],0.05)
-				dE_array[i] = max(dE_array[i],-0.05)
-				
+		success = np.zeros((n,N),dtype=bool)
+		plotE_array = np.zeros((2,N))
+		
+		for i in range(N):
+			num_success = 0
+			for j in range(n):
+				rootResult = opt.root(fun,e0[j],args=(phi_array[i],B,ky,Ef,L,Z,parabolic_method))
+				#rootResult = opt.root(fun,e0[j],args=(phi_array[i],B,ky,Ef,L,Z,parabolic_method),method = 'lm',options={'maxiter': 1000})
+				E_array[j][i] = rootResult.x[0]
+				success[j][i] = rootResult.success
 				if rootResult.success:
-					E_array[i] = rootResult.x[0]
-				else:
-					E_array[i] = 2 #this is a quick fix	
-					#print('at phi =',phi_array[i], ' rootResult is',rootResult.x[0], ', temp_E_array is ', temp_E_array[i], 'and dE_array[i] is', dE_array[i])
-				"""
-				if j == 0:
-					plot_temp[i] = temp_E_array[i]
-				
-				if phi_array[i]>-5:
-				
-				#if j == 1:				
-					print('E_array[i]',E_array[i])
-					print('temp_E_array[i]',temp_E_array[i])
-					print('dE_array[i]',dE_array[i])
-					print('rootResult.x[0]',rootResult.x[0])
-					print('success?',rootResult.success)
-					print(' ')
-				"""
-			plt.plot(phi_array,E_array,'.b')
-			#print(temp_E_array)
-		plt.axis([phi_start,phi_end,-1,1])
+					num_success += 1
+			if num_success == n:
+				plotE_array[0][i] = E_array[0][i]
+				plotE_array[1][i] = E_array[-1][i]
+			elif num_success == 0:
+				plotE_array[0][i] = -1.
+				plotE_array[1][i] = 1.
+			else:
+				index = 0
+				for j in range(n):
+					if success[j][i]:
+						plotE_array[0][i] = E_array[j][i]
+						index = j
+						break
+				for j in range(index,n):
+					if (success[j][i] and np.absolute(plotE_array[0][i]-E_array[j][i])>10**(-6)):
+						plotE_array[1][i] = E_array[j][i]
+						break
+					if j == n-1:
+						if E_array[0][i]>0.9999:
+							plotE_array[1][i] = 1.
+						elif E_array[0][i]<-0.9999:
+							plotE_array[1][i] = -1.
+						else:
+							plotE_array[1][i] = plotE_array[0][i]
+			plotE_array[0][i] = min(plotE_array[0][i],1.)
+			plotE_array[0][i] = max(plotE_array[0][i],-1.)
+			plotE_array[1][i] = min(plotE_array[1][i],1.)
+			plotE_array[1][i] = max(plotE_array[1][i],-1.)
+			
+			"""
+			print('plotE_array[0]:',plotE_array[0][i])
+			print('plotE_array[1]:',plotE_array[1][i])
+			for j in range(n):
+				print('succsess:',j,success[j][i])
+				print('E_array:',j,E_array[j][i])
+			"""
+		end = time.time()
+		print('Time: ',end-start)
+		fig = plt.figure()
+		plt.plot(phi_array,plotE_array[0],'.b')
+		plt.plot(phi_array,plotE_array[1],'.b')
+		plt.axis([phi_start,phi_end,-1-0.1,1+0.1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
 		plt.title(title)		
 		path = 'figures/050617/EvsPhi/Variable_'+variable+'/'
@@ -202,9 +157,6 @@ def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable):
 		fig.savefig(path+name+'.png')
 		plt.close(fig)
 		
-		#plt.figure()
-		#plt.plot(phi_array,plot_temp)
-		#plt.show()
 		
 ########################################################
 # E vs k
@@ -298,8 +250,14 @@ def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
 		phi_end = 3*np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
 		F_array = np.zeros(phi_array.shape)
+		time_array = np.zeros(phi_array.shape)
 		for i in range(N):
+			start = time.time()
 			F_array[i] = freeEnergy(phi_array[i],ky,B,Ef,L,Z,kBT,method)
+			end = time.time()
+			time_array[i] = end-start
+		
+		#Plotting free energy
 		fig = plt.figure()
 		plt.plot(phi_array,F_array,'.')
 		plt.axis([phi_start,phi_end,-2,-1])
@@ -319,6 +277,30 @@ def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 		name = 'method_%s_%s_%.2f_N_%d' % (method,variable,x,N)
+		name = name.replace('.','-')
+		fig.savefig(path+name+'.png')
+		plt.close(fig)
+		
+		#Plotting time
+		fig = plt.figure()
+		plt.plot(phi_array,time_array,'.')
+		#plt.axis([phi_start,phi_end,-2,-1])
+		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
+		plt.title(title)
+		path = 'figures/050617/FvsPhi/Variable_'+variable+'/'
+		folder = ""
+		if variable is 'B':
+			folder = 'Ef_%.1f_ky_%.3f/'%(Ef,ky)
+		elif variable is 'Ef':
+			folder = 'B_%.1f_ky_%.3f/'%(B,ky)
+		elif variable is 'ky':
+			folder = 'Ef_%.1f_B_%.1f/'%(Ef,B)
+		folder = folder.replace('.','-')
+		path += folder
+		directory = os.path.dirname(path)
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		name = 'Time_method_%s_%s_%.2f_N_%d' % (method,variable,x,N)
 		name = name.replace('.','-')
 		fig.savefig(path+name+'.png')
 		plt.close(fig)
@@ -365,13 +347,18 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		elif variable is 'Ef':
 			Ef = x
 			print('Ef: ',Ef)
-		phi_start = -3*np.pi
-		phi_end = 3*np.pi
+		phi_start = -2*np.pi
+		phi_end = 2*np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
 		I_array = np.zeros(phi_array.shape)
 		for i in range(N):
 			print('count:',i+1,'/',N)
+			print('      phi = ',phi_array[i])
+			start = time.time()
 			I_array[i] = totalCurrent(phi_array[i],B,Ef,L,Z,kBT,method)
+			end = time.time()
+			print('time spent: ',end-start)
+			print(' ')
 		fig = plt.figure()
 		plt.plot(phi_array,I_array,'.')
 		plt.axis([phi_start,phi_end,-2,-1])
@@ -427,10 +414,10 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
 Z = 0
 L = 106.7
-N = 100
-n = 2
+N = 50
+n = 4
 Ef = 500.
-ky = 0.2
+ky = 0.01
 B = 2.3
 phi = 1.#np.pi/2
 kBT = 1.
@@ -443,12 +430,12 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 0.1
+start = 5.
 end = 10.
 figCount = 10
 
-#plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
-plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable)
+plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
+#plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable)
 #makePlotEvsPhi(B,ky,Ef,L,Z,100,n,method)
 #makePlotEvsKy(B,phi,Ef,L,Z,100,n,method)
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)

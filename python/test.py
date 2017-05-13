@@ -11,7 +11,8 @@ import math
 from scipy import integrate
 
 
-name = "hello.my.name.is"
-print(name)
-nyname = name.replace(".","-")
-print(nyname)
+myzeros = np.zeros((3,2))
+for i in range(3):
+	myzeros[i][0] = i
+	
+print(myzeros)

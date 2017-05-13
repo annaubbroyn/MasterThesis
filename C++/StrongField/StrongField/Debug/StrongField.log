@@ -1,0 +1,6 @@
+﻿LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
+gsl.lib(error.obj) : error LNK2019: unresolved external symbol ___iob_func referenced in function _gsl_error
+gsl.lib(stream.obj) : error LNK2001: unresolved external symbol ___iob_func
+gsl.lib(error.obj) : error LNK2019: unresolved external symbol _fprintf referenced in function _gsl_error
+gsl.lib(stream.obj) : error LNK2001: unresolved external symbol _fprintf
+C:\Users\Anna\Documents\GitHub\MasterThesis\C++\StrongField\Debug\StrongField.exe : fatal error LNK1120: 2 unresolved externals

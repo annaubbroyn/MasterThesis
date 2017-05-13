@@ -152,34 +152,55 @@ def fun(E_,phi,B,ky,Ef,L,Z,method):
 	
 	return [D.real,D.imag]
 
-def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method,E_prev,dE_prev):
-	#n=4
-	#de0 = 1/float(n+1)
-	#de0 = 0.05
-	#e0 = np.linspace(-1+de0,1-de0,n)
-	E_array = []
-	maxDiff = 10**(-4)
+def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method):
+	n=4
+	de0 = 0.01
+	e0 = np.linspace(-1+de0,1-de0,n)
+	temp_E_array = np.zeros(n)
+	E_array = np.zeros(2)
+	success = np.zeros(n,dtype=bool)
+	maxDiff = 10**(-6)
+	num_success = 0
 	#for j in range(n):
-	if E_prev[0]==2:
-		rootResult1 = opt.root(fun,0.95,args=(phi,B,ky,Ef,L,Z,method))
-		rootResult2 = opt.root(fun,-0.95,args=(phi,B,ky,Ef,L,Z,method))
+	for j in range(n):
+		rootResult = opt.root(fun,e0[j],args=(phi,B,ky,Ef,L,Z,method))
+		temp_E_array[j] = rootResult.x[0]
+		success[j] = rootResult.success
+		if rootResult.success:
+			num_success += 1
+	if num_success == n:
+		E_array[0] = temp_E_array[0]
+		E_array[1] = temp_E_array[-1]
+	elif num_success == 0:
+		E_array[0] = -1.
+		E_array[1] = 1.
 	else:
-		rootResult1 = opt.root(fun,E_prev[0] + dE_prev[0],args=(phi,B,ky,Ef,L,Z,method))
-		rootResult2 = opt.root(fun,E_prev[1] + dE_prev[1],args=(phi,B,ky,Ef,L,Z,method))
-	dE_prev[0] = rootResult1.x[0]-E_prev[0]
-	dE_prev[1] = rootResult2.x[0]-E_prev[1]
-	E_prev[0] = rootResult1.x[0]
-	E_prev[1] = rootResult2.x[0]
-	if rootResult1.success:
-		E_array.append(rootResult1.x[0])
-	if rootResult2.success:
-		E_array.append(rootResult2.x[0])
+		nextIndex = 0
+		for j in range(n):
+			if success[j]:
+				E_array[0] = temp_E_array[j]
+				index = j
+				break
+		for j in range(index,n):
+			if (success[j] and np.absolute(E_array[0]-temp_E_array[j])>10**(-6)):
+				E_array[1] = temp_E_array[j]
+				break
+			if j == n-1:
+				if temp_E_array[0]>0.9999:
+					E_array[1] = 1.
+				elif temp_E_array[0]<-0.9999:
+					E_array[1] = -1.
+				else:
+					E_array[1] = E_array[0]
+	E_array[0] = min(E_array[0],1.)
+	E_array[0] = max(E_array[0],-1.)
+	E_array[1] = min(E_array[1],1.)
+	E_array[1] = max(E_array[1],-1.)
+			
 	result = 0
-	for i in range(len(E_array)):
+	for i in range(2):
 		result += -np.log(2*np.cosh(0.5*E_array[i]/kBT))
-	return [result,E_prev,dE_prev]
-
-					
+	return result					
 	
 	
 def dFreeEnergy(ky,phi,B,Ef,L,Z,kBT,method):

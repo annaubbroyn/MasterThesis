@@ -1,19 +1,19 @@
-l= 0.5;
-option = 2;
+l= 0.7;
+option = 1;
 lambda = 2;%0.1:0.1:1;
 video = 0;
 vortex = 0;
-system = 'SFS';
-alpha = 0;%*pi/4;%0:pi/10:pi;
+system = 'Dwave';
+alpha = pi/4;%0:pi/10:pi;
 dalpha = 0;
 alphaL = alpha;
 alphaR = alpha + dalpha;
 
 phi = 0;
-nx = 50;
-ny = 400;
-%nx = 5;
-%ny = 40;
+%nx = 50;
+%ny = 400;
+nx = 5;
+ny = 40;
 
 ntheta = 100;
 dimy = 2;
@@ -74,8 +74,9 @@ for k_alpha = 1:length(alpha)
         I = linspace(0,0,nx);
 
         for i=1:nx
-
+            disp([num2str(i) '/' num2str(nx)])
             for j = 1:ny
+                disp([num2str(j) '/' num2str(ny)])
                 fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,alphaL(k_alpha),alphaR(k_alpha));
                 dtheta = pi/ntheta;
                 theta = -pi/2 + dtheta;
