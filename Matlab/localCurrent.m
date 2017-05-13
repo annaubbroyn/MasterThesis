@@ -1,7 +1,7 @@
-function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR)
+function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR,h)
     sigma = 1;
     L = 100;
-    factor = 1;
+    factor = h*L;
     xi =  factor*(1+tan(theta)^2)*cos(theta);
     gamma = Gamma(x,y,theta,l,option,lambda);
     if strcmp(system,'SNS')
@@ -21,18 +21,17 @@ function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR)
         %I = (f1-f2)/h;
         
         %alphaR = alphaL;
-        alpha = alphaL;
-        E = cos(2*theta-2*alpha)*cos(phi/2-gamma/2);
-        dE = cos(2*theta-2*alpha)*sin(phi/2-gamma/2);
-        I = tanh(E/2)*dE;
-        
-        %alphaL = pi/4, alphaR = -pi/4
-        %alphaL = pi/4;
-        %alphaR = pi/4;
-        %E = sin(2*theta)*sin(phi/2-gamma/2);
-        %dE = sin(2*theta)*cos(phi/2-gamma/2);
-        %I = tanh(E/2)*dE;
-        %theta = 0;
-        %I = cos(2*(theta-alpha))*sin(phi/2-gamma/2)*tanh(cos(2*(theta-alpha))*cos(phi/2-gamma/2)/2);
+        if alphaL == alphaR 
+            alpha = alphaL;
+            E = cos(2*theta-2*alpha)*cos(phi/2-gamma/2);
+            dE = cos(2*theta-2*alpha)*sin(phi/2-gamma/2);
+            I = tanh(E/2)*dE;
+        elseif alphaL == pi/4 && alphaR == -pi/4
+            E = sin(2*theta)*sin(phi/2-gamma/2);
+            dE = sin(2*theta)*cos(phi/2-gamma/2);
+            I = tanh(E/2)*dE;
+        end
+            %theta = 0;
+            %I = cos(2*(theta-alpha))*sin(phi/2-gamma/2)*tanh(cos(2*(theta-alpha))*cos(phi/2-gamma/2)/2);
     end
 end

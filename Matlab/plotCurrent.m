@@ -1,19 +1,20 @@
-l= 0.7;
-option = 1;
+l= 0.5;
+option = 2;
 lambda = 2;%0.1:0.1:1;
 video = 0;
 vortex = 0;
-system = 'Dwave';
-alpha = pi/4;%0:pi/10:pi;
+system = 'SFS';
+alpha = 0;%0:pi/10:pi;
 dalpha = 0;
 alphaL = alpha;
-alphaR = alpha + dalpha;
+alphaR = alpha;
+zeeman = 0.0075;
 
 phi = 0;
-%nx = 50;
-%ny = 400;
-nx = 5;
-ny = 40;
+nx = 50;
+ny = 400;
+%nx = 5;
+%ny = 40;
 
 ntheta = 100;
 dimy = 2;
@@ -33,13 +34,13 @@ if(option == 1)
 end
 
 for k_alpha = 1:length(alpha)
-    toPrint=['alpha: ',num2str(k_alpha),'/',num2str(length(alpha))];
-    disp(toPrint)
+    %toPrint=['alpha: ',num2str(k_alpha),'/',num2str(length(alpha))];
+    %disp(toPrint)
 
     for k = 1:length(lambda)
 
-        toPrint=['lambda: ',num2str(k),'/',num2str(length(lambda))];
-        disp(toPrint)
+        %toPrint=['lambda: ',num2str(k),'/',num2str(length(lambda))];
+        %disp(toPrint)
 
         dx = 1/nx;
         dy = 2*dimy/ny;
@@ -74,10 +75,10 @@ for k_alpha = 1:length(alpha)
         I = linspace(0,0,nx);
 
         for i=1:nx
-            disp([num2str(i) '/' num2str(nx)])
+            %disp([num2str(i) '/' num2str(nx)])
             for j = 1:ny
-                disp([num2str(j) '/' num2str(ny)])
-                fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,alphaL(k_alpha),alphaR(k_alpha));
+                %disp([num2str(j) '/' num2str(ny)])
+                fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,alphaL(k_alpha),alphaR(k_alpha),zeeman);
                 dtheta = pi/ntheta;
                 theta = -pi/2 + dtheta;
                 for(n = 1:98)
@@ -113,7 +114,7 @@ for k_alpha = 1:length(alpha)
         figGcf.PaperPosition = [0 0 .4 1];
 
         if(video == 0)
-            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alpha-' strrep(num2str(alpha(k_alpha)),'.','-') '_new']; 
+            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(alphaL),'.','-') '_alphaR-' strrep(num2str(alphaR),'.','-') '_h_' strrep(num2str(zeeman),'.','-')]; 
             %filename2 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\Dist' num2str(option) '\Matlab\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
             print(fig,filename1,'-dpng');
             %print(filename1,'-dpng')
