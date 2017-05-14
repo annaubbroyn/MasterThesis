@@ -1,13 +1,14 @@
-l= 0.5;
-option = 2;
+l= 0.3;
+option = 3;
 lambda = 2;%0.1:0.1:1;
 video = 0;
 vortex = 0;
-system = 'SFS';
-alpha = 0;%0:pi/10:pi;
-dalpha = 0;
+system = 'Dwave';
+alpha = pi/4;%0:pi/10:pi;
+dalpha =0;
 alphaL = alpha;
-alphaR = alpha;
+alphaR = -alpha;
+swave = 1;
 zeeman = 0.0075;
 
 phi = 0;
@@ -78,7 +79,7 @@ for k_alpha = 1:length(alpha)
             %disp([num2str(i) '/' num2str(nx)])
             for j = 1:ny
                 %disp([num2str(j) '/' num2str(ny)])
-                fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,alphaL(k_alpha),alphaR(k_alpha),zeeman);
+                fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,alphaL(k_alpha),alphaR(k_alpha),zeeman,swave);
                 dtheta = pi/ntheta;
                 theta = -pi/2 + dtheta;
                 for(n = 1:98)
@@ -114,7 +115,7 @@ for k_alpha = 1:length(alpha)
         figGcf.PaperPosition = [0 0 .4 1];
 
         if(video == 0)
-            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(alphaL),'.','-') '_alphaR-' strrep(num2str(alphaR),'.','-') '_h_' strrep(num2str(zeeman),'.','-')]; 
+            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(alphaL),'.','-') '_alphaR-' strrep(num2str(alphaR),'.','-') '_h_' strrep(num2str(zeeman),'.','-') '_swave_' strrep(num2str(swave),'.','-')]; 
             %filename2 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\Dist' num2str(option) '\Matlab\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
             print(fig,filename1,'-dpng');
             %print(filename1,'-dpng')
