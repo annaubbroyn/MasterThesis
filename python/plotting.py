@@ -1,7 +1,9 @@
 from Functions import fun
 from Functions import freeEnergy
 from Functions import totalCurrent
-from matplotlib import pyplot as plt
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 import time
 import os
 # nicer looking default plots
@@ -258,11 +260,14 @@ def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
 			time_array[i] = end-start
 		
 		#Plotting free energy
+		print('test 1')
 		fig = plt.figure()
+		print('test 2')
 		plt.plot(phi_array,F_array,'.')
 		plt.axis([phi_start,phi_end,-2,-1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
 		plt.title(title)
+		print('test 3')
 		path = 'figures/050617/FvsPhi/Variable_'+variable+'/'
 		folder = ""
 		if variable is 'B':
@@ -273,13 +278,18 @@ def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
 			folder = 'Ef_%.1f_B_%.1f/'%(Ef,B)
 		folder = folder.replace('.','-')
 		path += folder
+		print('test 4')
 		directory = os.path.dirname(path)
 		if not os.path.exists(directory):
 			os.makedirs(directory)
+		print('test 5')
 		name = 'method_%s_%s_%.2f_N_%d' % (method,variable,x,N)
 		name = name.replace('.','-')
+		print('test 6')
 		fig.savefig(path+name+'.png')
+		print('test 7')
 		plt.close(fig)
+		print('test 8')
 		
 		#Plotting time
 		fig = plt.figure()
@@ -359,8 +369,11 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 			end = time.time()
 			print('time spent: ',end-start)
 			print(' ')
+		print('test 1')
 		fig = plt.figure()
+		print('test 2')
 		plt.plot(phi_array,I_array,'.')
+		print('test 3')
 		#plt.axis([phi_start,phi_end,-2,-1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef)
 		plt.title(title)
@@ -372,13 +385,18 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 			folder = 'B_%.1f/'%B
 		folder = folder.replace('.','-')
 		path += folder
+		print('test 4')
 		directory = os.path.dirname(path)
 		if not os.path.exists(directory):
 			os.makedirs(directory)
+		print('test 5')
 		name = 'method_%s_%s_%.2f_N_%d_n_%d' % (method,variable,x,N,n)
 		name = name.replace('.','-')
+		print('test 6')
 		fig.savefig(path+name+'.png')
+		print('test 7')
 		plt.close(fig)
+		print('test 8')
 
 
 ########################################################
@@ -430,9 +448,9 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 1.
-end = 10.
-figCount = 10
+start = 0.01
+end = 0.01
+figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
 #plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable)
