@@ -347,8 +347,8 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		elif variable is 'Ef':
 			Ef = x
 			print('Ef: ',Ef)
-		phi_start = -2*np.pi
-		phi_end = 2*np.pi
+		phi_start = -np.pi
+		phi_end = np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
 		I_array = np.zeros(phi_array.shape)
 		for i in range(N):
@@ -361,7 +361,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 			print(' ')
 		fig = plt.figure()
 		plt.plot(phi_array,I_array,'.')
-		plt.axis([phi_start,phi_end,-2,-1])
+		#plt.axis([phi_start,phi_end,-2,-1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef)
 		plt.title(title)
 		path = 'figures/050617/IvsPhi/Variable_'+variable+'/'
@@ -414,7 +414,7 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
 Z = 0
 L = 106.7
-N = 50
+N = 20
 n = 4
 Ef = 500.
 ky = 0.01
@@ -430,18 +430,18 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 5.
+start = 1.
 end = 10.
 figCount = 10
 
-plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
+#plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
 #plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable)
 #makePlotEvsPhi(B,ky,Ef,L,Z,100,n,method)
 #makePlotEvsKy(B,phi,Ef,L,Z,100,n,method)
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-#plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
+plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
 
 #####################
 #To remember
