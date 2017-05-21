@@ -377,7 +377,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		#plt.axis([phi_start,phi_end,-2,-1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef)
 		plt.title(title)
-		path = 'figures/050617/IvsPhi/Variable_'+variable+'/'
+		path = 'figures/050617/IvsPhi/Variable_'+variable+'/k_0-5/'
 		folder = ""
 		if variable is 'B':
 			folder = 'Ef_%.1f/'%Ef
@@ -398,6 +398,42 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		plt.close(fig)
 		print('test 8')
 
+		
+def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,Z,kBT,N,method):
+	print('plotAndSaveCurrentvsB')
+	print('method',method)
+	print('Ef',Ef)
+	print('N',N)
+	B_array = np.linspace(B_start,B_end,N)
+	phi = np.pi/2
+	I_array = np.zeros(B_array.shape)
+	for i in range(N):
+		print('count:',i+1,'/',N)
+		print('B: ',B_array[i])
+		start = time.time()
+		I_array[i] = totalCurrent(phi,B_array[i],Ef,L,Z,kBT,method)
+		end = time.time()
+		print('time spent: ',end-start)
+		print(' ')
+	fig = plt.figure()
+	plt.plot(B_array,I_array,'.')
+	#plt.axis([phi_start,phi_end,-2,-1])
+	title = 'Current vs magnetic field'
+	plt.title(title)
+	path = 'figures/050617/IvsB/'
+	folder = 'Ef_%.1f/'%Ef
+	folder = folder.replace('.','-')
+	path += folder
+	directory = os.path.dirname(path)
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f' % (method,N,B_start,B_end)
+	name = name.replace('.','-')
+	print('test 6')
+	fig.savefig(path+name+'.png')
+	print('test 7')
+	plt.close(fig)
+	print('test 8')
 
 ########################################################
 # Current vs B
@@ -432,7 +468,7 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
 Z = 0
 L = 106.7
-N = 20
+N = 100
 n = 4
 Ef = 500.
 ky = 0.01
@@ -449,7 +485,7 @@ method = 'y1y2'
 
 variable = 'B'
 start = 0.01
-end = 0.01
+end = 10.
 figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
@@ -459,7 +495,8 @@ figCount = 1
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
+#plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
+plotAndSaveCurrentvsB(start,end,Ef,L,Z,kBT,N,method)
 
 #####################
 #To remember
