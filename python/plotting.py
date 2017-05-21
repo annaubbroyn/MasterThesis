@@ -338,7 +338,7 @@ def plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method):
 	title = 'Total Current with method = '+method + ', $\tilde{B}= '+str(B)+'$, $k_y/k_F = '+str(ky)+'$, $E_F/\Delta = '+str(Ef)+'$'
 	plt.show()
 	
-def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
+def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,W,Z,kBT,N,method,variable):
 	print('plotAndSaveCurrentvsPhi')
 	print('method',method)
 	if variable is not 'B':
@@ -365,7 +365,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 			print('count:',i+1,'/',N)
 			print('      phi = ',phi_array[i])
 			start = time.time()
-			I_array[i] = totalCurrent(phi_array[i],B,Ef,L,Z,kBT,method)
+			I_array[i] = totalCurrent(phi_array[i],B,Ef,L,W,Z,kBT,method)
 			end = time.time()
 			print('time spent: ',end-start)
 			print(' ')
@@ -399,7 +399,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		print('test 8')
 
 		
-def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,Z,kBT,N,method):
+def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,W,Z,kBT,N,method):
 	print('plotAndSaveCurrentvsB')
 	print('method',method)
 	print('Ef',Ef)
@@ -411,7 +411,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,Z,kBT,N,method):
 		print('count:',i+1,'/',N)
 		print('B: ',B_array[i])
 		start = time.time()
-		I_array[i] = totalCurrent(phi,B_array[i],Ef,L,Z,kBT,method)
+		I_array[i] = totalCurrent(phi,B_array[i],Ef,L,W,Z,kBT,method)
 		end = time.time()
 		print('time spent: ',end-start)
 		print(' ')
@@ -468,7 +468,8 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
 Z = 0
 L = 106.7
-N = 100
+W = 10*L
+N = 20
 n = 4
 Ef = 500.
 ky = 0.01
@@ -484,8 +485,8 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 0.01
-end = 10.
+start = 1.
+end = 1.
 figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
@@ -495,8 +496,8 @@ figCount = 1
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-#plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
-plotAndSaveCurrentvsB(start,end,Ef,L,Z,kBT,N,method)
+plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,W,Z,kBT,N,method,variable)
+#plotAndSaveCurrentvsB(start,end,Ef,L,Z,kBT,N,method)
 
 #####################
 #To remember
