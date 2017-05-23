@@ -33,10 +33,6 @@ end
 if(option == 1)
     lambda = 1;
 end
-if( ~strcmp(system,'Dwave'))
-    alphaL = 0;
-    alphaR = 0;
-end
 
 for k_alpha = 1:length(alpha)
     %toPrint=['alpha: ',num2str(k_alpha),'/',num2str(length(alpha))];

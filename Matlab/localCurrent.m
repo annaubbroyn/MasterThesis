@@ -19,18 +19,18 @@ function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR,h,s
         %f1 = freeEnergy(phi+h-gamma,alphaL,alphaR,theta);
         %f2 = freeEnergy(phi-gamma,alphaL,alphaR,theta);
         %I = (f1-f2)/h;
-        alpha = alphaL;
-        if alphaL==alphaR
-            E = sqrt(cos(2*(theta-alpha))^2+swave^2)*cos(phi/2-gamma/2);
-            dE = -0.5*sqrt(cos(2*(theta-alpha))^2+swave^2)*sin(phi/2-gamma/2);
-        elseif abs(alphaL-alphaR)==pi/2
-            chi = atan(swave/cos(2*(theta-alpha)));
-            E = sqrt(cos(2*(theta-alpha))^2+swave^2)*cos(phi/2-gamma/2+chi);
-            dE = -0.5*sqrt(cos(2*(theta-alpha))^2+swave^2)*sin(phi/2-gamma/2+chi);
-        elseif abs(alpha-alphaR)==pi/4
-            f=sqrt(cos(2*(theta-alpha))^2*sin(2*(theta-alpha))+swave^2+swave^4);
-            E = f*sin(phi-gamma+chiL-chiR)/sqrt(2*swave^2+1-f*cos(phi-gamma+chiL-chiR));
-            dE = f*(cos(phi-gamma+chiL-chiR)/sqrt(2*swave^2+1-sgn*f*cos(phi-gamma+chiL-chiR)
+        
+        %alphaR = alphaL;
+        if alphaL == alphaR 
+            alpha = alphaL;
+            E = sqrt(cos(2*theta-2*alpha)^2+swave^2)*cos(phi/2-gamma/2);
+            dE = sqrt(cos(2*theta-2*alpha)^2+swave^2)*sin(phi/2-gamma/2);
+            I = 1/(1+swave^2)*tanh(E/2)*dE;
+        elseif alphaL == pi/4 && alphaR == -pi/4
+            E = sqrt(sin(2*theta)^2+swave^2)*sin(phi/2-gamma/2+atan(swave/sin(2*theta)));
+            dE = sqrt(sin(2*theta)^2+swave^2)*cos(phi/2-gamma/2+atan(swave/sin(2*theta)));
+            I = 1/(1+swave^2)*tanh(E/2)*dE;
+        end
             %theta = 0;
             %I = cos(2*(theta-alpha))*sin(phi/2-gamma/2)*tanh(cos(2*(theta-alpha))*cos(phi/2-gamma/2)/2);
     end

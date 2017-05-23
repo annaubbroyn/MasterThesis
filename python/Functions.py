@@ -152,8 +152,7 @@ def fun(E_,phi,B,ky,Ef,L,Z,method):
 	
 	return [D.real,D.imag]
 
-def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
-	gauge_shift = B*L*y/Ef
+def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method):
 	n=4
 	de0 = 0.01
 	e0 = np.linspace(-1+de0,1-de0,n)
@@ -164,7 +163,7 @@ def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
 	num_success = 0
 	#for j in range(n):
 	for j in range(n):
-		rootResult = opt.root(fun,e0[j],args=(phi+gauge_shift,B,ky,Ef,L,Z,method))
+		rootResult = opt.root(fun,e0[j],args=(phi,B,ky,Ef,L,Z,method))
 		temp_E_array[j] = rootResult.x[0]
 		success[j] = rootResult.success
 		if rootResult.success:
@@ -204,16 +203,10 @@ def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
 	return result					
 	
 	
-def dFreeEnergy(ky,phi,y,B,Ef,L,Z,kBT,method):
-	return misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
+def dFreeEnergy(ky,phi,B,Ef,L,Z,kBT,method):
+	return misc.derivative(freeEnergy,phi,args=(ky,B,Ef,L,Z,kBT,method),dx=0.001)
 	
-def currentDensity(y,phi,B,Ef,L,Z,kBT,method):
-	print('y:',y)
+def totalCurrent(phi,B,Ef,L,Z,kBT,method):
 	kyMin = -0.5
 	kyMax = 0.5
-	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method))[0]
-
-def totalCurrent(phi,B,Ef,L,W,Z,kBT,method):
-	yMin = -W/2
-	yMax = W/2
-	return integrate.quad(currentDensity,yMin,yMax,args=(phi,B,Ef,L,Z,kBT,method))[0]
+	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,B,Ef,L,Z,kBT,method))[0]
