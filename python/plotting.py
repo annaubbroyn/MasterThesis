@@ -468,7 +468,7 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
 Z = 0
 L = 106.7
-N = 100
+N = 20
 n = 4
 Ef = 500.
 ky = 0.01
@@ -485,7 +485,7 @@ method = 'y1y2'
 
 variable = 'B'
 start = 0.01
-end = 10.
+end = 15.
 figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)

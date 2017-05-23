@@ -207,6 +207,6 @@ def dFreeEnergy(ky,phi,B,Ef,L,Z,kBT,method):
 	return misc.derivative(freeEnergy,phi,args=(ky,B,Ef,L,Z,kBT,method),dx=0.001)
 	
 def totalCurrent(phi,B,Ef,L,Z,kBT,method):
-	kyMin = -0.5
-	kyMax = 0.5
+	kyMin = -0.01
+	kyMax = 0.01
 	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,B,Ef,L,Z,kBT,method))[0]
