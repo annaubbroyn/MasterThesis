@@ -15,27 +15,27 @@ function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR,h,s
     elseif strcmp(system,'Dwave')
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        deltaMax = sqrt(1+swave^2);
-        d = swave;
-        b = 2*theta;
-        cR = 2*alphaR;
-        cL = 2*alphaL;
-        chiRp = atan(d/cos(b-cR)) + pi*(cos(b-cR)<0);
-        chiRm = atan(d/cos(b+cR)) + pi*(cos(b+cR)<0);
-        chiLp = atan(d/cos(b-cL)) + pi*(cos(b-cL)<0);
-        chiLm = atan(d/cos(b+cL)) + pi*(cos(b+cL)<0);
-        numer_p = sqrt(cos(b+cL)^2+d^2)*sqrt(cos(b-cR)^2+d^2);
-        numer_m = sqrt(cos(b-cL)^2+d^2)*sqrt(cos(b+cR)^2+d^2);
-        denom_p = sqrt(cos(b+cL)^2+cos(b-cR)^2+d*d^2-2*numer_p*cos(chiRp+chiLm+phi-gamma));
-        denom_m = sqrt(cos(b-cL)^2+cos(b+cR)^2+d*d^2-2*numer_m*cos(chiRm+chiLp-phi+gamma));
-        ap = (1/deltaMax)*numer_p*sin(chiRp+chiLm+phi-gamma)/denom_p;
-        am = (1/deltaMax)*numer_m*sin(chiRm+chiLp-phi+gamma)/denom_p;
-        dap = (1/deltaMax)*numer_p*cos(chiRp+chiLm+phi-gamma)/denom_p-ap*numer_p*sin(chiRp+chiRm+phi-gamma)/denom_p^2;
-        dam = -(1/deltaMax)*numer_m*cos(chiRm+chiLp-phi+gamma)/denom_m-am*numer_m*sin(chiRm+chiRp-phi+gamma)/denom_m^2;
-        
-        Ip = -tanh(ap/2)*dap;
-        Im = -tanh(am/2)*dam;
-        I = Ip + Im;
+%         deltaMax = sqrt(1+swave^2);
+%         d = swave;
+%         b = 2*theta;
+%         cR = 2*alphaR;
+%         cL = 2*alphaL;
+%         chiRp = atan(d/cos(b-cR)) + pi*(cos(b-cR)<0);
+%         chiRm = atan(d/cos(b+cR)) + pi*(cos(b+cR)<0);
+%         chiLp = atan(d/cos(b-cL)) + pi*(cos(b-cL)<0);
+%         chiLm = atan(d/cos(b+cL)) + pi*(cos(b+cL)<0);
+%         numer_p = sqrt(cos(b+cL)^2+d^2)*sqrt(cos(b-cR)^2+d^2);
+%         numer_m = sqrt(cos(b-cL)^2+d^2)*sqrt(cos(b+cR)^2+d^2);
+%         denom_p = sqrt(cos(b+cL)^2+cos(b-cR)^2+d*d^2-2*numer_p*cos(chiRp+chiLm+phi));
+%         denom_m = sqrt(cos(b-cL)^2+cos(b+cR)^2+d*d^2-2*numer_m*cos(chiRm+chiLp-phi));
+%         ap = (1/deltaMax)*numer_p*sin(chiRp+chiLm+phi)/denom_p;
+%         am = (1/deltaMax)*numer_m*sin(chiRm+chiLp-phi)/denom_p;
+%         dap = (1/deltaMax)*numer_p*cos(chiRp+chiLm+phi)/denom_p-ap*numer_p*sin(chiRp+chiRm+phi)/denom_p^2;
+%         dam = -(1/deltaMax)*numer_m*cos(chiRm+chiLp-phi)/denom_m-am*numer_m*sin(chiRm+chiRp-phi)/denom_m^2;
+%         
+%         Ip = -tanh(ap/2)*dap;
+%         Im = -tanh(am/2)*dam;
+%         I = Ip + Im;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %         E = abs(cos(2*theta))*cos(phi/2-gamma/2);
 %         dE = -0.5*abs(cos(2*theta))*sin(phi/2-gamma/2);

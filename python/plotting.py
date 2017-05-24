@@ -399,11 +399,12 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		print('test 8')
 
 		
-def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,Z,kBT,N,method):
+def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,Z,kBT,N,method):
 	print('plotAndSaveCurrentvsB')
 	print('method',method)
 	print('Ef',Ef)
 	print('N',N)
+	print('k_max',k_max)
 	B_array = np.linspace(B_start,B_end,N)
 	phi = np.pi/2
 	I_array = np.zeros(B_array.shape)
@@ -411,7 +412,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,Z,kBT,N,method):
 		print('count:',i+1,'/',N)
 		print('B: ',B_array[i])
 		start = time.time()
-		I_array[i] = totalCurrent(phi,B_array[i],Ef,L,Z,kBT,method)
+		I_array[i] = totalCurrent(phi,B_array[i],k_max,Ef,L,Z,kBT,method)
 		end = time.time()
 		print('time spent: ',end-start)
 		print(' ')
@@ -427,7 +428,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,Ef,L,Z,kBT,N,method):
 	directory = os.path.dirname(path)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f' % (method,N,B_start,B_end)
+	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f_kMax_%.2f' % (method,N,B_start,B_end,k_max)
 	name = name.replace('.','-')
 	print('test 6')
 	fig.savefig(path+name+'.png')
@@ -484,8 +485,9 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 0.01
-end = 15.
+start = 0.1
+end = 10.
+k_max = 0.1
 figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
@@ -496,7 +498,7 @@ figCount = 1
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
 #plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
-plotAndSaveCurrentvsB(start,end,Ef,L,Z,kBT,N,method)
+plotAndSaveCurrentvsB(start,end,k_max,Ef,L,Z,kBT,N,method)
 
 #####################
 #To remember

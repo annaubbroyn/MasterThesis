@@ -1,14 +1,14 @@
-l= 0.3;
-option = 3;
+l= 0.5;
+option = 1;
 lambda = 2;%0.1:0.1:1;
 video = 0;
 vortex = 0;
 system = 'Dwave';
-alpha = pi/4;%0:pi/10:pi;
-dalpha =0;
+alpha = 0;%0:pi/10:pi;
+dalpha = 0;
 alphaL = alpha;
-alphaR = -alpha;
-swave = 1;
+alphaR = alpha+dalpha;
+swave = 5;
 zeeman = 0.0075;
 
 phi = 0;
@@ -32,6 +32,10 @@ end
 
 if(option == 1)
     lambda = 1;
+end
+if( ~strcmp(system,'Dwave'))
+    alphaL = 0;
+    alphaR = 0;
 end
 
 for k_alpha = 1:length(alpha)
@@ -98,6 +102,20 @@ for k_alpha = 1:length(alpha)
         axis([-0.5 0.5 -dimy dimy+.1]);
         fig.OuterPosition = [.05 .05 .1 .9];
         L = sqrt(jx.^2 + jy.^2);
+        
+%         quiver(x,y,jx,jy,'r','AutoScaleFactor',.3);
+%         quiver(x(1:2:nx,1:2:ny),y(1:2:nx,1:2:ny),jx(1:2:nx,1:2:ny),jy(1:2:nx,1:2:ny),'r','AutoScaleFactor',0.3);
+%         quiver(x(1:3:nx,1:3:ny),y(1:3:nx,1:3:ny),jx(1:3:nx,1:3:ny),jy(1:3:nx,1:3:ny),'r','AutoScaleFactor',0.4);
+         quiver(x(1:3:nx,1:3:ny),y(1:3:nx,1:3:ny),jx(1:3:nx,1:3:ny),jy(1:3:nx,1:3:ny),'r','AutoScaleFactor',0.3);
+%         quiver(x(1:5:nx,1:5:ny),y(1:5:nx,1:5:ny),jx(1:5:nx,1:5:ny),jy(1:5:nx,1:5:ny),'r','AutoScaleFactor',0.5);
+%         quiver(x(1:4:nx,1:4:ny),y(1:4:nx,1:4:ny),jx(1:4:nx,1:4:ny)./L(1:4:nx,1:4:ny),jy(1:4:nx,1:4:ny)./L(1:4:nx,1:4:ny),'r','AutoScaleFactor',.4);
+%         quiver(x(1:4:nx,1:10:ny),y(1:4:nx,1:10:ny),jx(1:4:nx,1:10:ny)./L(1:4:nx,1:10:ny),jy(1:4:nx,1:10:ny)./L(1:4:nx,1:10:ny),'r','AutoScaleFactor',.5);
+%          jx(abs(jx)>0.3) = 0;
+%          jy(abs(jy)>0.3) = 0;
+%              if(dv>0)
+%                  quiver(x(nx0:dnx1:nx1,ny0:dny1:ny1),y(nx0:dnx1:nx1,ny0:dny1:ny1),jx(nx0:dnx1:nx1,ny0:dny1:ny1),jy(nx0:dnx1:nx1,ny0:dny1:ny1),'r','AutoScaleFactor',l_arrow);
+%              end
+%         
         h = surf(x,y,0.5*jtot);
         view(0,90); shading interp
         set(h,'ZData',jtot-1);
@@ -131,9 +149,39 @@ for k_alpha = 1:length(alpha)
 
             fig2 = figure(2*k);
             hold on
+            jx(jx<0.05) = 0;
+            jx(jx>0.3) = 0;
+            jy(jy<0.05) = 0;
+            jy(jy>0.3) = 0;
+
+            jx(abs(jy)>abs(jx)) = 0;
+            jy(abs(jx)>abs(jy)) = 0;
+            jx(abs(jx)<0.1) = 0;
+            jy(abs(jy)<0.05) = 0;
+            jx(abs(jx)>0.2) = 0;
+            jy(abs(jy)>0.2) = 0;
+            L = sqrt(jx.^2 + jy.^2);
+% 
+            quiver(x(1:6:nx,1:10:ny),y(1:6:nx,1:10:ny),jx(1:6:nx,1:10:ny)./L(1:6:nx,1:10:ny),jy(1:6:nx,1:10:ny)./L(1:6:nx,1:10:ny),'k','AutoScaleFactor',.5,'AlignVertexCenters','on','linewidth',1);
+%             quiver(x(1:8:nx,1:8:ny),y(1:8:nx,1:8:ny),jx(1:8:nx,1:8:ny)./L(1:8:nx,1:8:ny),jy(1:8:nx,1:8:ny)./L(1:8:nx,1:8:ny),'k','AutoScaleFactor',.4,'linewidth',1);
+%             quiver(x(1:8:nx,1:8:ny),y(1:8:nx,1:8:ny),jx(1:8:nx,1:8:ny),jy(1:8:nx,1:8:ny),'k','AutoScaleFactor',.4,'linewidth',1);
+%             quiver(x(1:3:nx,1:3:ny),y(1:3:nx,1:3:ny),jx(1:3:nx,1:3:ny),jy(1:3:nx,1:3:ny),'k','AutoScaleFactor',.3,'linewidth',1);
+            
 
             dnx2 = floor(1.25*dnx);
             dny2 = floor(1.25*dny);
+            
+            
+%             quiver(x(nx0:dnx2:nx1,ny0:dny2:ny1),y(nx0:dnx2:nx1,ny0:dny2:ny1),jx(nx0:dnx2:nx1,ny0:dny2:ny1),jy(nx0:dnx2:nx1,ny0:dny2:ny1),'k','AutoScaleFactor',.3,'linewidth',1);
+%             quiver(x(1:3:nx,1:2:ny),y(1:3:nx,1:2:ny),jx(1:3:nx,1:2:ny)./L(1:3:nx,1:2:ny),jy(1:3:nx,1:2:ny)./L(1:3:nx,1:2:ny),'k','AutoScaleFactor',.4,'linewidth',1);
+% 
+%             plot(0,-pi*l^2*1.25,'ob','markerfacecolor','b','markersize',10)
+%             plot(0,-pi*l^2*0.75,'or','markerfacecolor','r','markersize',10)
+%             plot(0,-pi*l^2*0.25,'ob','markerfacecolor','b','markersize',10)
+%             plot(0,pi*l^2*0.25,'or','markerfacecolor','r','markersize',10)
+%             plot(0,pi*l^2*0.75,'ob','markerfacecolor','b','markersize',10)
+%             plot(0,pi*l^2*1.25,'or','markerfacecolor','r','markersize',10)
+    
 
             fig2.Units = 'normalized';
             fig2.GraphicsSmoothing = 'on';
@@ -149,11 +197,12 @@ for k_alpha = 1:length(alpha)
             figGcf.PaperUnits = 'normalized';
             figGcf.PaperPosition = [0 0 .4 1];
 
-            filename1 = ['C:\Users\Anna\Documents\GitHub\Project\Figures\Dist' num2str(option) '\Vortex' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
-            filename2 = ['C:\Users\Anna\Documents\GitHub\Project\Figures\Dist' num2str(option) '\Matlab\Vortex' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
+            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Vortex' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(alphaL),'.','-') '_alphaR-' strrep(num2str(alphaR),'.','-') '_h_' strrep(num2str(zeeman),'.','-') '_swave_' strrep(num2str(swave),'.','-')]; 
+            %filename1 = ['C:\Users\Anna\Documents\GitHub\Project\Figures\Dist' num2str(option) '\Vortex' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
+            %filename2 = ['C:\Users\Anna\Documents\GitHub\Project\Figures\Dist' num2str(option) '\Matlab\Vortex' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
             print(filename1,'-dpng')
-            print(filename1,'-dpdf')
-            savefig(filename2)
+            %print(filename1,'-dpdf')
+            %savefig(filename2)
         end
 
     end
