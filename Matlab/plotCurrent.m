@@ -8,7 +8,7 @@ alpha = 0;%0:pi/10:pi;
 dalpha = 0;
 alphaL = alpha;
 alphaR = alpha+dalpha;
-swave = 5;
+swave = 0;
 zeeman = 0.0075;
 
 phi = 0;
@@ -135,6 +135,7 @@ for k_alpha = 1:length(alpha)
         if(video == 0)
             filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(alphaL),'.','-') '_alphaR-' strrep(num2str(alphaR),'.','-') '_h_' strrep(num2str(zeeman),'.','-') '_swave_' strrep(num2str(swave),'.','-')]; 
             %filename2 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\Dist' num2str(option) '\Matlab\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
+            disp(filename1)
             print(fig,filename1,'-dpng');
             %print(filename1,'-dpng')
             %savefig(filename2)
