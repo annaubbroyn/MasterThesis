@@ -53,7 +53,7 @@ def dY1(x,a,c,X,method):
 def dY2(x,a,c,X,method):
 	return Y2(a,c*(x+X),method)
 
-def fun(E_,phi,B,ky,Ef,L,Z,method):
+def fun(E_,phi,y,B,ky,Ef,L,Z,method):
 
 	if isinstance(E_,float):
 		E = E_
@@ -138,6 +138,23 @@ def fun(E_,phi,B,ky,Ef,L,Z,method):
 	gamma_hL = np.exp(1j*(eta-phiL))
 	gamma_hR = np.exp(1j*(eta-phiR))
 	
+	D1_eL = D1_eL*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiL_e-ky))
+	D2_eL = D2_eL*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiL_e-ky))
+	D1_hL = D1_hL*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiL_h-ky))
+	D2_hL = D2_hL*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiL_h-ky))
+	D1_eR = D1_eR*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiR_e-ky))
+	D2_eR = D2_eR*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiR_e-ky))
+	D1_hR = D1_hR*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiR_h-ky))
+	D2_hR = D2_hR*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiR_h-ky))
+	dD1_eL = dD1_eL*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiL_e-ky))
+	dD2_eL = dD2_eL*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiL_e-ky))
+	dD1_hL = dD1_hL*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiL_h-ky))
+	dD2_hL = dD2_hL*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiL_h-ky))
+	dD1_eR = dD1_eR*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiR_e-ky))
+	dD2_eR = dD2_eR*np.exp(1j*y*(0.5*np.sqrt(B/Ef)*xiR_e-ky))
+	dD1_hR = dD1_hR*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiR_h-ky))
+	dD2_hR = dD2_hR*np.exp(1j*y*(-0.5*np.sqrt(B/Ef)*xiR_h-ky))
+	
 	   
 	matrix = np.array([[D1_eL, D2_eL, 0, 0, gamma_hL, gamma_eL, 0, 0],
 					   [0, 0, D1_hL, D2_hL, 1, 1, 0, 0],
@@ -152,7 +169,7 @@ def fun(E_,phi,B,ky,Ef,L,Z,method):
 	
 	return [D.real,D.imag]
 
-def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method):
+def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
 	n=4
 	de0 = 0.01
 	e0 = np.linspace(-1+de0,1-de0,n)
@@ -163,7 +180,7 @@ def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method):
 	num_success = 0
 	#for j in range(n):
 	for j in range(n):
-		rootResult = opt.root(fun,e0[j],args=(phi,B,ky,Ef,L,Z,method))
+		rootResult = opt.root(fun,e0[j],args=(phi,y,B,ky,Ef,L,Z,method))
 		temp_E_array[j] = rootResult.x[0]
 		success[j] = rootResult.success
 		if rootResult.success:
@@ -203,10 +220,15 @@ def freeEnergy(phi,ky,B,Ef,L,Z,kBT,method):
 	return result					
 	
 	
-def dFreeEnergy(ky,phi,B,Ef,L,Z,kBT,method):
-	return misc.derivative(freeEnergy,phi,args=(ky,B,Ef,L,Z,kBT,method),dx=0.001)
+def dFreeEnergy(ky,phi,y,B,Ef,L,Z,kBT,method):
+	return misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
 	
-def totalCurrent(phi,B,k_max,Ef,L,Z,kBT,method):
+def currentDensity(y,phi,B,k_max,Ef,L,Z,kBT,method):
 	kyMin = -k_max
 	kyMax = k_max
-	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,B,Ef,L,Z,kBT,method))[0]
+	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method))[0]
+
+def totalCurrent(phi,B,k_max,Ef,L,W,Z,kBT,method):
+	yMin = -W
+	yMax = W
+	return integrate.quad(currentDensity,yMin,yMax,args=(phi,B,k_max,Ef,L,Z,kBT,method))[0]

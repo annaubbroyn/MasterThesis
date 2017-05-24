@@ -338,7 +338,7 @@ def plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method):
 	title = 'Total Current with method = '+method + ', $\tilde{B}= '+str(B)+'$, $k_y/k_F = '+str(ky)+'$, $E_F/\Delta = '+str(Ef)+'$'
 	plt.show()
 	
-def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
+def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable):
 	print('plotAndSaveCurrentvsPhi')
 	print('method',method)
 	if variable is not 'B':
@@ -365,7 +365,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 			print('count:',i+1,'/',N)
 			print('      phi = ',phi_array[i])
 			start = time.time()
-			I_array[i] = totalCurrent(phi_array[i],B,Ef,L,Z,kBT,method)
+			I_array[i] = totalCurrent(phi_array[i],B,k_max,Ef,L,W,Z,kBT,method)
 			end = time.time()
 			print('time spent: ',end-start)
 			print(' ')
@@ -377,12 +377,12 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		#plt.axis([phi_start,phi_end,-2,-1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef)
 		plt.title(title)
-		path = 'figures/050617/IvsPhi/Variable_'+variable+'/k_0-5/'
+		path = 'figures/050617/IvsPhi/withGauge/Variable_'+variable+'/'
 		folder = ""
 		if variable is 'B':
-			folder = 'Ef_%.1f/'%Ef
+			folder = 'Ef_%.1f/k_max_%.2f/'% (Ef,k_max)
 		elif variable is 'Ef':
-			folder = 'B_%.1f/'%B
+			folder = 'B_%.1f/k_max_%.2f/'% (B,k_max)
 		folder = folder.replace('.','-')
 		path += folder
 		print('test 4')
@@ -390,7 +390,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 		print('test 5')
-		name = 'method_%s_%s_%.2f_N_%d_n_%d' % (method,variable,x,N,n)
+		name = 'method_%s_%s_%.2f_N_%d_n_%d_W_%.2f' % (method,variable,x,N,n,W)
 		name = name.replace('.','-')
 		print('test 6')
 		fig.savefig(path+name+'.png')
@@ -399,7 +399,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable):
 		print('test 8')
 
 		
-def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,Z,kBT,N,method):
+def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method):
 	print('plotAndSaveCurrentvsB')
 	print('method',method)
 	print('Ef',Ef)
@@ -412,7 +412,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,Z,kBT,N,method):
 		print('count:',i+1,'/',N)
 		print('B: ',B_array[i])
 		start = time.time()
-		I_array[i] = totalCurrent(phi,B_array[i],k_max,Ef,L,Z,kBT,method)
+		I_array[i] = totalCurrent(phi,B_array[i],k_max,Ef,L,W,Z,kBT,method)
 		end = time.time()
 		print('time spent: ',end-start)
 		print(' ')
@@ -421,14 +421,14 @@ def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,Z,kBT,N,method):
 	#plt.axis([phi_start,phi_end,-2,-1])
 	title = 'Current vs magnetic field'
 	plt.title(title)
-	path = 'figures/050617/IvsB/'
+	path = 'figures/050617/IvsB/withGauge/'
 	folder = 'Ef_%.1f/'%Ef
 	folder = folder.replace('.','-')
 	path += folder
 	directory = os.path.dirname(path)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f_kMax_%.2f' % (method,N,B_start,B_end,k_max)
+	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f_kMax_%.2f_W_%.2f' % (method,N,B_start,B_end,k_max,W)
 	name = name.replace('.','-')
 	print('test 6')
 	fig.savefig(path+name+'.png')
@@ -469,6 +469,7 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
 Z = 0
 L = 106.7
+W = L
 N = 20
 n = 4
 Ef = 500.
@@ -485,9 +486,9 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 0.1
-end = 10.
-k_max = 0.1
+start = 1.
+end = 1.
+k_max = 0.001
 figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
@@ -497,8 +498,8 @@ figCount = 1
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-#plotAndSaveCurrentvsPhi(start,end,figCount,B,Ef,L,Z,kBT,N,method,variable)
-plotAndSaveCurrentvsB(start,end,k_max,Ef,L,Z,kBT,N,method)
+plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable)
+#plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method)
 
 #####################
 #To remember
