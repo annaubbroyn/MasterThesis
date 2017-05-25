@@ -1,6 +1,8 @@
 function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR,h,swave)
+    sigma = 1;
     L = 100;
-    xi =  h*L*cos(theta);
+    factor = h*L;
+    xi =  factor*(1+tan(theta)^2)*cos(theta);
     gamma = Gamma(x,y,theta,l,option,lambda);
     if strcmp(system,'SNS')
         I = sin(phi/2-gamma/2)*tanh(cos(phi/2-gamma/2)/2);
@@ -28,35 +30,14 @@ function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR,h,s
         B_m = cos(b-cL)^2+cos(b+cR)^2+2*d^2;
         denom_p = sqrt(B_p-2*A_p*cos(chiRp+chiLm+phi-gamma));
         denom_m = sqrt(B_m-2*A_m*cos(chiRm+chiLp-phi+gamma));
-        numer_p = A_p*sin(chiRp+chiLm+phi-gamma);
-        numer_m = A_m*sin(chiRm+chiLp-phi+gamma);
+        nomer_p = A_p*sin(chiRp+chiLm+phi-gamma);
+        nomer_m = A_m*sin(chiRm+chiLp-phi+gamma);
         if denom_p > 0
             ap = (1/deltaMax)*numer_p/denom_p;
-            dap = (1/deltaMax)*(A_p^2*(cos(2*(chiRp+chiLm+phi-gamma))+3)-2*A_p*B_p*cos(chiRp+chiLm+phi-gamma))/(2*(B_p-2*A_p*cos(chiRp+chiLm+phi-gamma))^(3/2));
-        elseif abs(numer_p)<10^(-10)
-            ap = 0;
-            dap = 0;
-        else
-            disp('Dividing on zero in ap')
-            disp('denom_p')
-            disp(denom_p)
-            disp('numer_p')
-            disp(numer_p)
-        end
-        if denom_m > 0
-            am = (1/deltaMax)*numer_m/denom_m;
-            dam = -(1/deltaMax)*(A_m^2*(cos(2*(chiRm+chiLp-phi+gamma))+3)-2*A_m*B_m*cos(chiRm+chiLp-phi+gamma))/(2*(B_m-2*A_m*cos(chiRm+chiLp-phi+gamma))^(3/2));
-        elseif abs(numer_m)<10^(-10)
-            am = 0;
-            dam = 0;
-        else
-            disp('Dividing on zero in am')
-            disp('denom_m')
-            disp(denom_m)
-            disp('numer_m')
-            disp(numer_m)
-        end
-        
+        elseif nomer_p
+        am = (1/deltaMax)*A_m*sin(chiRm+chiLp-phi+gamma)/sqrt(B_m-2*A_m*cos(chiRm+chiLp-phi+gamma));
+        dap = (1/deltaMax)*(A_p^2*(cos(2*(chiRp+chiLm+phi-gamma))+3)-2*A_p*B_p*cos(chiRp+chiLm+phi-gamma))/(2*(B_p-2*A_p*cos(chiRp+chiLm+phi-gamma))^(3/2));
+        dam = -(1/deltaMax)*(A_m^2*(cos(2*(chiRm+chiLp-phi+gamma))+3)-2*A_m*B_m*cos(chiRm+chiLp-phi+gamma))/(2*(B_m-2*A_m*cos(chiRm+chiLp-phi+gamma))^(3/2));
         
         Ip = -tanh(ap/2)*dap;
         Im = -tanh(am/2)*dam;

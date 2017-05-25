@@ -487,8 +487,8 @@ method = 'y1y2'
 
 variable = 'B'
 start = 1.
-end = 1.
-k_max = 0.001
+end = 5.
+k_max = 0.
 figCount = 1
 
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
@@ -498,8 +498,8 @@ figCount = 1
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable)
-#plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method)
+#plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable)
+plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method)
 
 #####################
 #To remember
@@ -508,4 +508,4 @@ plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variabl
    
 
 
-   
+

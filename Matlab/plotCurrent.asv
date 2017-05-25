@@ -7,18 +7,10 @@ vortex = 0;
 system = 'SFS';
 alpha = 0;
 dalpha = 0;
-alphaL = 0;%[pi/4 pi/4 pi/8 pi/3 pi/4 pi/4 pi/4 0 pi/8 pi/2];
-alphaR = 0;%[pi/4 -pi/4 -pi/8 -pi/3 -pi/4 -pi/4 -pi/4 pi/4 -pi/8 -pi/2];
-swave = 0;%[0 0 0 0 1 5 0.1 0 1 1];
-zeeman = linspace(0.005,0.105,10);
-
-if strcmp(system,'SFS')
-    N_alpha = length(zeeman);
-elseif strcmp(system,'Dwave')
-    N_alpha = length(alphaL);
-else
-    N_alpha = 0;
-end
+alphaL = 0;%[0 pi/4 pi/4 pi/8 pi/3 pi/4 pi/4 pi/4 0 pi/8 pi/2];
+alphaR = 0;%[0 pi/4 -pi/4 -pi/8 -pi/3 -pi/4 -pi/4 -pi/4 pi/4 -pi/8 -pi/2];
+swave = 0;%[0 0 0 0 0 1 5 0.1 0 1 1];
+zeeman = linspace(0,0.1,10);
 
 phi = 0;
 nx = 50;
@@ -47,7 +39,7 @@ if( ~strcmp(system,'Dwave'))
     alphaR = 0;
 end
 
-for k_alpha = 1:N_alpha
+for k_alpha = 1:length(alpha)
     %toPrint=['alpha: ',num2str(k_alpha),'/',num2str(length(alpha))];
     %disp(toPrint)
 
@@ -91,26 +83,16 @@ for k_alpha = 1:N_alpha
         if strcmp(system,'Dwave')
             aL = alphaL(k_alpha);
             aR = alphaR(k_alpha);
-            sw = swave(k_alpha);
-            zee = zeeman(1);
-        elseif strcmp(system,'SFS')
-            aL = alphaL(1);
-            aR = alphaR(1);
-            sw = swave(1);
-            zee = zeeman(k_alpha);
-        else
-            aL = alphaL(1);
-            aR = alphaR(1);
-            sw = swave(1);
-            zee = zeeman(1);
-        end
+            swave = alphaL(k_alpha);
+            zee = zeeman(0);
+        elseif sy
 
         for i=1:nx
             %disp([num2str(i) '/' num2str(nx)])
             for j = 1:ny
                 %disp([num2str(j) '/' num2str(ny)])
                 
-                fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,aL,aR,zee,sw);
+                fun= @(theta)localCurrent(x(i,j),y(i,j),theta, l, phi,option,lambda(k),system,alphaL(k_alpha),alphaR(k_alpha),zeeman,swave(k_alpha));
                 dtheta = pi/ntheta;
                 theta = -pi/2 + dtheta;
                 for(n = 1:98)
@@ -160,7 +142,7 @@ for k_alpha = 1:N_alpha
         figGcf.PaperPosition = [0 0 .4 1];
 
         if(video == 0)
-            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(aL),'.','-') '_alphaR-' strrep(num2str(aR),'.','-') '_h_' strrep(num2str(zee),'.','-') '_swave_' strrep(num2str(sw),'.','-')]; 
+            filename1 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\' system '\Dist' num2str(option) '\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi)) '_alphaL-' strrep(num2str(alphaL(k_alpha)),'.','-') '_alphaR-' strrep(num2str(alphaR(k_alpha)),'.','-') '_h_' strrep(num2str(zeeman),'.','-') '_swave_' strrep(num2str(swave(k_alpha)),'.','-')]; 
             %filename2 = ['C:\Users\Anna\Documents\GitHub\MasterThesis\Matlab\Figures\Dist' num2str(option) '\Matlab\Dist' num2str(option) '_l_0-' num2str(l*10) '_lambda_' num2str(floor(lambda(k))) '-' num2str(floor(100*(lambda(k)-floor(lambda(k))))) 'phi_pi-' floor(num2str(pi/phi))]; 
             disp(filename1)
             print(fig,filename1,'-dpng');
@@ -237,4 +219,4 @@ for k_alpha = 1:N_alpha
 end
 if(video == 1)
     close(writerobj)
-end 
+end

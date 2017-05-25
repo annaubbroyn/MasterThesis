@@ -224,6 +224,8 @@ def dFreeEnergy(ky,phi,y,B,Ef,L,Z,kBT,method):
 	return misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
 	
 def currentDensity(y,phi,B,k_max,Ef,L,Z,kBT,method):
+	if(k_max == 0):
+		return dFreeEnergy(k_max,phi,y,B,Ef,L,Z,kBT,method)
 	kyMin = -k_max
 	kyMax = k_max
 	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method))[0]
