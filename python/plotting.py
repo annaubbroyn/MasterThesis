@@ -14,45 +14,7 @@ from scipy import optimize as opt
 ############################################################
 # E vs Phi
 
-def makePlotEvsPhi(B,ky,Ef,L,Z,N,n,method):
-	print('makePlotEvsPhi')
-	print('method',method)
-	print('ky',ky)
-	print('Ef',Ef)
-	print('B',B)
-	print('N',N)
-	print('n',n)
-	
-	de0 = 0.05#2/float(n+1)
-	phi_start = -3*np.pi
-	phi_end = 3*np.pi
-	phi_array = np.linspace(phi_start, phi_end, N)
-	E_array = np.zeros(phi_array.shape)
-	time_array = np.zeros(phi_array.shape)
-	e0 = np.linspace(-1+de0,1-de0,n)
-	plt.figure()
-	for j in range(n):
-		print('count:',j+1,'/',n)
-		for i in range(N):
-			start = time.time()
-			rootResult = opt.root(fun,e0[j],args=(phi_array[i],B,ky,Ef,L,Z,method))
-			end = time.time()
-			time_array[i] = end-start
-			#if rootResult.success:
-			E_array[i] = rootResult.x[0]
-			#else:
-			#	E_array[i] = 2
-		plt.plot(phi_array,E_array,'.b')
-	#plt.rc('text',usetex=True)
-	plt.axis([phi_start,phi_end,-1,1])
-	title = 'method = '+method + ', $\tilde{B}= '+str(B)+'$, $k_y/k_F = '+str(ky)+'$, $E_F/\Delta = '+str(Ef)+'$'
-	plt.title(title)
-	plt.show()
-	plt.figure()
-	plt.plot(phi_array,time_array)
-	plt.show()
-	
-def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,parabolic_method,variable):
+def plotAndSaveEvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,n,parabolic_method,variable):
 	print('plotAndSaveEvsPhi')
 	print('method',parabolic_method)
 	if variable is not 'ky':
@@ -75,69 +37,69 @@ def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,parabolic_method,variab
 			Ef = x
 			print('Ef: ',Ef)
 		
-		start = time.time()
 		
 		de0 = 0.01
+		e0 = np.linspace(-1+de0,1-de0,n)
 		
 		phi_start = -3*np.pi
 		phi_end = 3*np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
 		
-		E_array = np.zeros((n,N))
-		e0 = np.linspace(-1+de0,1-de0,n)
+		E_array = np.zeros((2,N))
+		time_array = np.zeros(N)
 		success = np.zeros((n,N),dtype=bool)
 		plotE_array = np.zeros((2,N))
+		temp_E_array = np.zeros((n,N))
+		success = np.zeros((n,N),dtype=bool)
+		maxDiff = 10**(-6)
 		
 		for i in range(N):
+			print('count:',i+1,'/',N)
 			num_success = 0
+			
+			start = time.time()
 			for j in range(n):
-				rootResult = opt.root(fun,e0[j],args=(phi_array[i],B,ky,Ef,L,Z,parabolic_method))
+				rootResult = opt.root(fun,e0[j],args=(phi_array[i],y,B,ky,Ef,L,Z,parabolic_method))
 				#rootResult = opt.root(fun,e0[j],args=(phi_array[i],B,ky,Ef,L,Z,parabolic_method),method = 'lm',options={'maxiter': 1000})
-				E_array[j][i] = rootResult.x[0]
+				temp_E_array[j][i] = float(rootResult.x[0])
 				success[j][i] = rootResult.success
 				if rootResult.success:
 					num_success += 1
 			if num_success == n:
-				plotE_array[0][i] = E_array[0][i]
-				plotE_array[1][i] = E_array[-1][i]
+				E_array[0][i] = temp_E_array[0][i]
+				E_array[1][i] = temp_E_array[-1][i]
 			elif num_success == 0:
-				plotE_array[0][i] = -1.
-				plotE_array[1][i] = 1.
+				E_array[0][i] = -1.
+				E_array[1][i] = 1.
 			else:
 				index = 0
 				for j in range(n):
 					if success[j][i]:
-						plotE_array[0][i] = E_array[j][i]
+						E_array[0][i] = temp_E_array[j][i]
 						index = j
 						break
 				for j in range(index,n):
-					if (success[j][i] and np.absolute(plotE_array[0][i]-E_array[j][i])>10**(-6)):
-						plotE_array[1][i] = E_array[j][i]
+					if (success[j][i] and np.absolute(E_array[0][i]-temp_E_array[j][i])>10**(-6)):
+						E_array[1][i] = temp_E_array[j][i]
 						break
 					if j == n-1:
-						if E_array[0][i]>0.9999:
-							plotE_array[1][i] = 1.
+						if temp_E_array[0][i]>0.9999:
+							E_array[1][i] = 1.
 						elif E_array[0][i]<-0.9999:
-							plotE_array[1][i] = -1.
+							E_array[1][i] = -1.
 						else:
-							plotE_array[1][i] = plotE_array[0][i]
-			plotE_array[0][i] = min(plotE_array[0][i],1.)
-			plotE_array[0][i] = max(plotE_array[0][i],-1.)
-			plotE_array[1][i] = min(plotE_array[1][i],1.)
-			plotE_array[1][i] = max(plotE_array[1][i],-1.)
+							E_array[1][i] = E_array[0][i]
+			E_array[0][i] = min(E_array[0][i],1.)
+			E_array[0][i] = max(E_array[0][i],-1.)
+			E_array[1][i] = min(E_array[1][i],1.)
+			E_array[1][i] = max(E_array[1][i],-1.)
 			
-			"""
-			print('plotE_array[0]:',plotE_array[0][i])
-			print('plotE_array[1]:',plotE_array[1][i])
-			for j in range(n):
-				print('succsess:',j,success[j][i])
-				print('E_array:',j,E_array[j][i])
-			"""
-		end = time.time()
-		print('Time: ',end-start)
+			end = time.time()
+			time_array[i] = end-start;
+		
 		fig = plt.figure()
-		plt.plot(phi_array,plotE_array[0],'.b')
-		plt.plot(phi_array,plotE_array[1],'.b')
+		plt.plot(phi_array,E_array[0],'.b')
+		plt.plot(phi_array,E_array[1],'.b')
 		plt.axis([phi_start,phi_end,-1-0.1,1+0.1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
 		plt.title(title)		
@@ -157,6 +119,12 @@ def plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,parabolic_method,variab
 		name = 'method_%s_%s_%.2f_N_%d_n_%d' % (method,variable,x,N,n)
 		name = name.replace('.','-')
 		fig.savefig(path+name+'.png')
+		plt.close(fig)
+		
+		fig = plt.figure()
+		plt.plot(phi_array,time_array)
+		title = 'Time vs phi for ABS energy'
+		fig.savefig(path+name+'_time.png')
 		plt.close(fig)
 		
 		
@@ -197,37 +165,8 @@ def makePlotEvsKy(B,phi,Ef,L,Z,N,n,method):
 
 ########################################################
 # F vs Phi
-
-def plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method):
-	print('makePlotFvsPhi')
-	print('method',method)
-	print('Ef',Ef)
-	print('B',B)
-	print('ky',ky)
-	print('kBT',kBT)
-	print('N',N)
 	
-	phi_start = -3*np.pi
-	phi_end = 3*np.pi
-	phi_array = np.linspace(phi_start, phi_end, N)
-	F_array = np.zeros(phi_array.shape)
-	time_array = np.zeros(phi_array.shape)
-	for i in range(N):
-		start = time.time()
-		F_array[i] = freeEnergy(phi_array[i],ky,B,Ef,L,Z,kBT,method)
-		end = time.time()
-		time_array[i] = end-start
-	plt.figure()
-	plt.plot(phi_array,F_array,'.')
-	title = 'Total Current with method = '+method + ', $\tilde{B}= '+str(B)+'$, $k_y/k_F = '+str(ky)+'$, $E_F/\Delta = '+str(Ef)+'$'
-	#plt.axis([phi_start,phi_end,-2,-1])
-	plt.show()
-	plt.figure()
-	plt.plot(phi_array,time_array)
-	title = 'Calculation time'
-	plt.show()
-	
-def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
+def plotAndSaveFvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,method,variable):
 	print('plotAndSaveFvsPhi')
 	print('method',method)
 	if variable is not 'ky':
@@ -254,20 +193,18 @@ def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
 		F_array = np.zeros(phi_array.shape)
 		time_array = np.zeros(phi_array.shape)
 		for i in range(N):
+			print('count:',i+1,'/',N)
 			start = time.time()
-			F_array[i] = freeEnergy(phi_array[i],ky,B,Ef,L,Z,kBT,method)
+			F_array[i] = freeEnergy(phi_array[i],ky,y,B,Ef,L,Z,kBT,method)
 			end = time.time()
 			time_array[i] = end-start
 		
 		#Plotting free energy
-		print('test 1')
 		fig = plt.figure()
-		print('test 2')
 		plt.plot(phi_array,F_array,'.')
 		plt.axis([phi_start,phi_end,-2,-1])
 		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
 		plt.title(title)
-		print('test 3')
 		path = 'figures/050617/FvsPhi/Variable_'+variable+'/'
 		folder = ""
 		if variable is 'B':
@@ -278,67 +215,26 @@ def plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable):
 			folder = 'Ef_%.1f_B_%.1f/'%(Ef,B)
 		folder = folder.replace('.','-')
 		path += folder
-		print('test 4')
 		directory = os.path.dirname(path)
 		if not os.path.exists(directory):
 			os.makedirs(directory)
-		print('test 5')
-		name = 'method_%s_%s_%.2f_N_%d' % (method,variable,x,N)
+		name = 'method_%s_%s_%.2f_N_%d_y_%.2f_kmax_%.2f' % (method,variable,x,N,y,ky)
 		name = name.replace('.','-')
-		print('test 6')
 		fig.savefig(path+name+'.png')
-		print('test 7')
 		plt.close(fig)
-		print('test 8')
 		
 		#Plotting time
 		fig = plt.figure()
-		plt.plot(phi_array,time_array,'.')
-		#plt.axis([phi_start,phi_end,-2,-1])
-		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
+		plt.plot(phi_array,time_array)
+		title = 'Time vs phi for free energy'
 		plt.title(title)
-		path = 'figures/050617/FvsPhi/Variable_'+variable+'/'
-		folder = ""
-		if variable is 'B':
-			folder = 'Ef_%.1f_ky_%.3f/'%(Ef,ky)
-		elif variable is 'Ef':
-			folder = 'B_%.1f_ky_%.3f/'%(B,ky)
-		elif variable is 'ky':
-			folder = 'Ef_%.1f_B_%.1f/'%(Ef,B)
-		folder = folder.replace('.','-')
-		path += folder
-		directory = os.path.dirname(path)
-		if not os.path.exists(directory):
-			os.makedirs(directory)
-		name = 'Time_method_%s_%s_%.2f_N_%d' % (method,variable,x,N)
-		name = name.replace('.','-')
-		fig.savefig(path+name+'.png')
+		fig.savefig(path+name+'_time.png')
 		plt.close(fig)
-
-
 
 ########################################################
 # Current vs Phi
-def plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method):
-	print('makePlotCurrentvsPhi')
-	print('method',method)
-	print('Ef',Ef)
-	print('B',B)
-	print('kBT',kBT)
-	print('N',N)
-	phi_start = -3*np.pi
-	phi_end = -7.1#3*np.pi
-	phi_array = np.linspace(phi_start, phi_end, N)
-	I_array = np.zeros(phi_array.shape)
-	for i in range(N):
-		print('count: ',i+1,'/',N)
-		I_array[i] = totalCurrent(phi_array[i],B,Ef,L,Z,kBT,method)
-	plt.figure()
-	plt.plot(phi_array,I_array,'.')
-	title = 'Total Current with method = '+method + ', $\tilde{B}= '+str(B)+'$, $k_y/k_F = '+str(ky)+'$, $E_F/\Delta = '+str(Ef)+'$'
-	plt.show()
-	
-def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable):
+
+def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim):
 	print('plotAndSaveCurrentvsPhi')
 	print('method',method)
 	if variable is not 'B':
@@ -365,7 +261,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,var
 			print('count:',i+1,'/',N)
 			print('      phi = ',phi_array[i])
 			start = time.time()
-			I_array[i] = totalCurrent(phi_array[i],B,k_max,Ef,L,W,Z,kBT,method)
+			I_array[i] = totalCurrent(phi_array[i],B,k_max,Ef,L,W,Z,kBT,method,intLim)
 			end = time.time()
 			print('time spent: ',end-start)
 			print(' ')
@@ -390,7 +286,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,var
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 		print('test 5')
-		name = 'method_%s_%s_%.2f_N_%d_n_%d_W_%.2f' % (method,variable,x,N,n,W)
+		name = 'method_%s_%s_%.2f_N_%d_n_%d_W_%.2f_kmax_%.2f_limit_%d' % (method,variable,x,N,n,W,k_max,intLim)
 		name = name.replace('.','-')
 		print('test 6')
 		fig.savefig(path+name+'.png')
@@ -399,7 +295,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,var
 		print('test 8')
 
 		
-def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method):
+def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method,intLim):
 	print('plotAndSaveCurrentvsB')
 	print('method',method)
 	print('Ef',Ef)
@@ -412,7 +308,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method):
 		print('count:',i+1,'/',N)
 		print('B: ',B_array[i])
 		start = time.time()
-		I_array[i] = totalCurrent(phi,B_array[i],k_max,Ef,L,W,Z,kBT,method)
+		I_array[i] = totalCurrent(phi,B_array[i],k_max,Ef,L,W,Z,kBT,method,intLim)
 		end = time.time()
 		print('time spent: ',end-start)
 		print(' ')
@@ -428,13 +324,10 @@ def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method):
 	directory = os.path.dirname(path)
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f_kMax_%.2f_W_%.2f' % (method,N,B_start,B_end,k_max,W)
+	name = 'method_%s_N_%d_Bstart_%.2f_Bend_%.2f_kMax_%.2f_W_%.2f_limit_%d' % (method,N,B_start,B_end,k_max,W,intLim)
 	name = name.replace('.','-')
-	print('test 6')
 	fig.savefig(path+name+'.png')
-	print('test 7')
 	plt.close(fig)
-	print('test 8')
 
 ########################################################
 # Current vs B
@@ -466,14 +359,14 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	
    	
 
-	
+intLim = 500
 Z = 0
 L = 106.7
 W = L
-N = 20
+N = 50
 n = 4
 Ef = 500.
-ky = 0.01
+ky = 0.
 B = 2.3
 phi = 1.#np.pi/2
 kBT = 1.
@@ -486,20 +379,21 @@ method = 'y1y2'
 #variable = 'ky'
 
 variable = 'B'
-start = 1.
-end = 5.
+start = 8.
+end = 10.
 k_max = 0.
-figCount = 1
+figCount = 4
+y = 4*Ef**2/(B**2*L)
 
-#plotAndSaveFvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,method,variable)
-#plotAndSaveEvsPhi(start,end,figCount,B,ky,Ef,L,Z,N,n,method,variable)
+plotAndSaveFvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,method,variable)
+#plotAndSaveEvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,n,method,variable)
 #makePlotEvsPhi(B,ky,Ef,L,Z,100,n,method)
 #makePlotEvsKy(B,phi,Ef,L,Z,100,n,method)
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-#plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable)
-plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method)
+#plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
+#plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
 
 #####################
 #To remember

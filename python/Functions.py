@@ -192,7 +192,7 @@ def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
 		E_array[0] = -1.
 		E_array[1] = 1.
 	else:
-		nextIndex = 0
+		index = 0
 		for j in range(n):
 			if success[j]:
 				E_array[0] = temp_E_array[j]
@@ -228,9 +228,9 @@ def currentDensity(y,phi,B,k_max,Ef,L,Z,kBT,method):
 		return dFreeEnergy(k_max,phi,y,B,Ef,L,Z,kBT,method)
 	kyMin = -k_max
 	kyMax = k_max
-	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method))[0]
+	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method),limit=100)[0]
 
-def totalCurrent(phi,B,k_max,Ef,L,W,Z,kBT,method):
-	yMin = -W
-	yMax = W
-	return integrate.quad(currentDensity,yMin,yMax,args=(phi,B,k_max,Ef,L,Z,kBT,method))[0]
+def totalCurrent(phi,B,k_max,Ef,L,W,Z,kBT,method,intLim):
+	yMin = -W/2
+	yMax = W/2
+	return integrate.quad(currentDensity,yMin,yMax,args=(phi,B,k_max,Ef,L,Z,kBT,method),limit=intLim)[0]
