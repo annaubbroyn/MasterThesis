@@ -4,82 +4,66 @@ from scipy import special as sp
 from scipy import misc
 from scipy.linalg import det
 from scipy import optimize as opt
-from import mpmath
+import mpmath 
+from scipy.interpolate import interp2d 
 
-#import math
-
-rmin = 1.0e20
-rmax = 1.0e-20
-fmin = 1.0e20
-fmax = 1.0e-20
-
-
-def y1(a,xi):
-	global rmin, rmax, fmin, fmax
+def y1(xi,a):
 	res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
-	factor = np.exp(-0.25*xi**2)
-	if (rmin > mpmath.norm(res)):
-		rmin = res
-	elif (rmax < mpmath.norm(res)):
-		rmax = res
-	if (fmin > mpmath.norm(factor)):
-		fmin = res
-	elif (fmax < mpmath.norm(factor)):
-		fmax = res
+	factor = mpmath.exp(-0.25*xi**2)
 		
-	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
+	return complex(factor*res)
 	
-def y2(a,xi):
+def y2(xi,a):
 	res = xi*mpmath.hyp1f1(0.5*a+0.75,1.5,0.5*xi**2)
-	factor = np.exp(-0.25*xi**2)
-	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
+	factor = mpmath.exp(-0.25*xi**2)
+	return complex(factor*res)
 	
-def Y1(a,xi,method):
-	if method == 'y1y2':
-		return y1(a,xi)
-	elif method == 'pcfuToy1y2':
-		Ua0 = np.sqrt(np.pi)/(mpmath.power(2,0.5*a+0.25)*mpmath.gamma(3./4.+0.5*a))
-		C1 = (1-np.sin(np.pi*a))/(2*Ua0)
-		C2 = 1/(2*Ua0)
-		U = mpmath.pcfu(a,xi)
-		Um = mpmath.pcfu(a,-xi)
-		V = np.sin(np.pi*a)*U+Um
-		return float(C1*U+C2*V)
-	elif method == 'pcfu':
-		return float(mpmath.pcfu(a,xi))
-			
-def Y2(a,xi,method):
-	if method == 'y1y2':
-		return y2(a,xi)
-	elif method == 'pcfuToy1y2':
-		dUa0 = -np.sqrt(np.pi)/(mpmath.power(2,0.5*a-0.25)*mpmath.gamma(0.25+0.5*a))
-		C1 = (1+np.sin(np.pi*a))/(2*dUa0)
-		C2 = -1/(2*dUa0)
-		U = mpmath.pcfu(a,xi)
-		Um = mpmath.pcfu(a,-xi)
-		V = np.sin(np.pi*a)*U+Um
-		return float(C1*U+C2*V)
-	elif method == 'pcfu':
-		if np.isinf(sp.gamma(1./2.+a)):
-			return np.inf
-		return float((mpmath.gamma(1./2.+a)/np.pi)*(np.sin(np.pi*a)*mpmath.pcfu(a,xi)+mpmath.pcfu(a,-xi)))
-	
-def dY1(x,a,c,X,method):
-	return Y1(a,c*(x+X),method)
+############################
 
-def dY2(x,a,c,X,method):
-	return Y2(a,c*(x+X),method)
+EF = 500.
+Bmin = 1.
+Bmax = 8.
+L = 106.7
+
+amin = -(EF + 1)/Bmin
+amax = -(EF - 1)/Bmin
+anum = 100
+
+xmin = -np.sqrt(Bmax/EF)
+xmax = +np.sqrt(Bmax/EF) * (1 + Bmax*L/(2*EF))
+xnum = 100
+
+avec = np.linspace(amin, amax, anum)
+xvec = np.linspace(xmin, xmax, xnum)
+mxvec, mavec = np.meshgrid(xvec,avec)
+
+y1_val = 1j*mavec
+y2_val = 1j*mavec
+
+for i, x in np.ndenumerate(mavec):
+	y1_val[i] = y1(mxvec[i], mavec[i])
+	y2_val[i] = y2(mxvec[i], mavec[i])
+	
+y1_int_re = interp2d(xvec, avec, y1_val.real, kind='cubic')
+y1_int_im = interp2d(xvec, avec, y1_val.imag, kind='cubic')
+y2_int_re = interp2d(xvec, avec, y2_val.real, kind='cubic')
+y2_int_im = interp2d(xvec, avec, y2_val.imag, kind='cubic')
+
+def Y1(x, a):
+	return y1(x,a)
+	return complex(y1_int_re(x, a)[0], y1_int_im(x,a)[0])
+	
+def Y2(x, a):
+	return y2(x,a)
+	return complex(y2_int_re(x, a)[0], y2_int_im(x,a)[0])
+
+
+############################
+	
+
 	
 def fun(E_,phi,y,B,ky,Ef,L,Z,method):
-
-	if isinstance(E_,float):
-		E = E_
-	else:
-		E = E_[0]
-	
-	#if abs(E)>1:
-	#	return [2*(abs(E)-1),2*(abs(E)-1)]
-	
+	E = E_[0]
 	
 	if E>1:
 		E = 1.
@@ -102,47 +86,25 @@ def fun(E_,phi,y,B,ky,Ef,L,Z,method):
 	xiR_e = np.sqrt(2*nu)*(alpha+ky)
 	xiR_h = np.sqrt(2*nu)*(alpha-ky)
 	
-	D1_eL = Y1(a_e,xiL_e,method)
-	D2_eL = Y2(a_e,xiL_e,method)
-	D1_hL = Y1(a_h,xiL_h,method)
-	D2_hL = Y2(a_h,xiL_h,method)
+	D1_eL = Y1(xiL_e,a_e)
+	D2_eL = Y2(xiL_e,a_e)
+	D1_hL = Y1(xiL_h,a_h)
+	D2_hL = Y2(xiL_h,a_h)
 	
-	D1_eR = Y1(a_e,xiR_e,method)
-	D2_eR = Y2(a_e,xiR_e,method)
-	D1_hR = Y1(a_h,xiR_h,method)
-	D2_hR = Y2(a_h,xiR_h,method)
+	D1_eR = Y1(xiR_e,a_e)
+	D2_eR = Y2(xiR_e,a_e)
+	D1_hR = Y1(xiR_h,a_h)
+	D2_hR = Y2(xiR_h,a_h)
 	
-	"""
-	dD1_eL = (1/nu)*misc.derivative(dY1,0,args=(a_e,np.sqrt(2*nu),ky,method),dx=0.001)
-	dD2_eL = (1/nu)*misc.derivative(dY2,0,args=(a_e,np.sqrt(2*nu),ky,method),dx=0.001)
-	dD1_hL = (1/nu)*misc.derivative(dY1,0,args=(a_h,np.sqrt(2*nu),-ky,method),dx=0.001)
-	dD2_hL = (1/nu)*misc.derivative(dY2,0,args=(a_h,np.sqrt(2*nu),-ky,method),dx=0.001)
+	dD1_eL = np.sqrt(2/nu)*misc.derivative(Y1,xiL_e,args=(a_e,),dx=0.001)
+	dD2_eL = np.sqrt(2/nu)*misc.derivative(Y2,xiL_e,args=(a_e,),dx=0.001)
+	dD1_hL = np.sqrt(2/nu)*misc.derivative(Y1,xiL_h,args=(a_h,),dx=0.001)
+	dD2_hL = np.sqrt(2/nu)*misc.derivative(Y2,xiL_h,args=(a_h,),dx=0.001)
 	
-	dD1_eR = (1/nu)*misc.derivative(dY1,alpha,args=(a_e,np.sqrt(2*nu),ky,method),dx=0.001)
-	dD2_eR = (1/nu)*misc.derivative(dY2,alpha,args=(a_e,np.sqrt(2*nu),ky,method),dx=0.001)
-	dD1_hR = (1/nu)*misc.derivative(dY1,alpha,args=(a_h,np.sqrt(2*nu),-ky,method),dx=0.001)
-	dD2_hR = (1/nu)*misc.derivative(dY2,alpha,args=(a_h,np.sqrt(2*nu),-ky,method),dx=0.001)
-	"""
-	"""
-	dD1_eL = misc.derivative(dY1,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*ky,method),dx=0.001)
-	dD2_eL = misc.derivative(dY2,-L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*ky,method),dx=0.001)
-	dD1_hL = misc.derivative(dY1,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*ky,method),dx=0.001)
-	dD2_hL = misc.derivative(dY2,-L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*ky,method),dx=0.001)
-	
-	dD1_eR = misc.derivative(dY1,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*ky,method),dx=0.001)
-	dD2_eR = misc.derivative(dY2,L/2,args=(a_e,np.sqrt(2/nu),L/2+nu*ky,method),dx=0.001)
-	dD1_hR = misc.derivative(dY1,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*ky,method),dx=0.001)
-	dD2_hR = misc.derivative(dY2,L/2,args=(a_h,np.sqrt(2/nu),L/2-nu*ky,method),dx=0.001)
-	"""
-	dD1_eL = np.sqrt(2/nu)*misc.derivative(dY1,xiL_e,args=(a_e,1,0,method),dx=0.001)
-	dD2_eL = np.sqrt(2/nu)*misc.derivative(dY2,xiL_e,args=(a_e,1,0,method),dx=0.001)
-	dD1_hL = np.sqrt(2/nu)*misc.derivative(dY1,xiL_h,args=(a_h,1,0,method),dx=0.001)
-	dD2_hL = np.sqrt(2/nu)*misc.derivative(dY2,xiL_h,args=(a_h,1,0,method),dx=0.001)
-	
-	dD1_eR = np.sqrt(2/nu)*misc.derivative(dY1,xiR_e,args=(a_e,1,0,method),dx=0.001)
-	dD2_eR = np.sqrt(2/nu)*misc.derivative(dY2,xiR_e,args=(a_e,1,0,method),dx=0.001)
-	dD1_hR = np.sqrt(2/nu)*misc.derivative(dY1,xiR_h,args=(a_h,1,0,method),dx=0.001)
-	dD2_hR = np.sqrt(2/nu)*misc.derivative(dY2,xiR_h,args=(a_h,1,0,method),dx=0.001)
+	dD1_eR = np.sqrt(2/nu)*misc.derivative(Y1,xiR_e,args=(a_e,),dx=0.001)
+	dD2_eR = np.sqrt(2/nu)*misc.derivative(Y2,xiR_e,args=(a_e,),dx=0.001)
+	dD1_hR = np.sqrt(2/nu)*misc.derivative(Y1,xiR_h,args=(a_h,),dx=0.001)
+	dD2_hR = np.sqrt(2/nu)*misc.derivative(Y2,xiR_h,args=(a_h,),dx=0.001)
 	
 	ZL = Z
 	ZR = Z
@@ -241,11 +203,37 @@ def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
 	return result					
 	
 	
+def tabulate(Ef, B, ky, L, steps):
+	E  = np.linspace(-1., 1., steps)
+
+	nu = 2*Ef/B
+	beta = E/Ef
+	alpha = L/nu
+	
+	a_e = -nu/2*(1+beta)
+	a_h = -nu/2*(1-beta)	
+		
+	xiL_e = np.sqrt(2*nu)*(0+ky)
+	xiL_h = np.sqrt(2*nu)*(0-ky)
+	xiR_e = np.sqrt(2*nu)*(alpha+ky)
+	xiR_h = np.sqrt(2*nu)*(alpha-ky)
+	
+	D1_eL = interp(E, y1(xiL_e,a_e))
+	D2_eL = interp(E, y2(xiL_e,a_e))
+	D1_hL = interp(E, y1(xiL_h,a_h))
+	D2_hL = interp(E, y2(xiL_h,a_h))
+	
+	D1_eR = interp(E, y1(xiR_e,a_e))
+	D2_eR = interp(E, y2(xiR_e,a_e))
+	D1_hR = interp(E, y1(xiR_h,a_h))
+	D2_hR = interp(E, y2(xiR_h,a_h))
+	
+	return [D1_eL, D2_eL, D1_hL, D2_hL, D1_eR, D2_eR, D1_hR, D2_hR]
+
+	
 def dFreeEnergy(ky,phi,y,B,Ef,L,Z,kBT,method):
-	global rmin, rmax, fmin, fmax
-	a =  misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
-	print(rmin, rmax, fmin, fmax)
-	return a
+	print(ky)
+	return  misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
 	
 def currentDensity(y,phi,B,k_max,Ef,L,Z,kBT,method):
 	if(k_max == 0):

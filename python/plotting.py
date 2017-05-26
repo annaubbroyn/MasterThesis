@@ -1,3 +1,4 @@
+import Functions
 from Functions import fun
 from Functions import freeEnergy
 from Functions import totalCurrent
@@ -434,7 +435,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method,intLim):
 # Current vs B
 
 	
-def testFunction(B, Ef, ky, L, Z, N, n, method):
+def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 	print('testFunction')
 	print('method',method)
 	print('ky',ky)
@@ -448,17 +449,21 @@ def testFunction(B, Ef, ky, L, Z, N, n, method):
 	E_array = np.linspace(-1,1,N)
 	Func_array = np.zeros(E_array.shape)
 	plt.figure()
+	plt.plot(phi,phi)
+	plt.show()
+	plt.figure()
 	for j in range(n):
 		print('count:',j+1,'/',n)
 		for i in range(N):		
-			Func_array[i] = fun(E_array[i],phi[j],B,ky,Ef,L,Z,method)[0]
+			Func_array[i] = fun([E_array[i]],phi[j],y,B,ky,Ef,L,Z,method)[0]
 		plotLabel='phi = '+str(phi[j])
 		plt.plot(E_array,Func_array,label=plotLabel)
+		plt.show()
 	plt.legend()
-	plt.show()
 	
 	
-   	
+ #################HVORFOR VIL IKKE TESTFUNCTION PLOTTE???????
+   
 
 intLim = 50
 Z = 0
@@ -476,22 +481,22 @@ method = 'y1y2'
 
 W = L
 k_max = 0.
-ky = 0.1
+ky = 0.
 B = 1.
 phi = np.pi
-y = 5.#4*Ef**2/(B**2*L)
+y = 0.#4*Ef**2/(B**2*L)
 
 figCount = 5
 variable = 'B'
 start = 1.
 end = 8.
 
-N = 10
-xVariable = 'y'
-startXval = -W/2
-endXval = W/2
-#startXval = np.pi/2
-#endXval = np.pi/2
+N = 50
+xVariable = 'phi'
+#startXval = -W/2
+#endXval = W/2
+startXval = -3*np.pi
+endXval = 3*np.pi
 
 #plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n,method,variable,xVariable)
 #plotAndSaveFvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,method,variable,xVariable)
@@ -500,10 +505,10 @@ endXval = W/2
 #makePlotEvsPhi(B,ky,Ef,L,Z,100,n,method)
 #makePlotEvsKy(B,phi,Ef,L,Z,100,n,method)
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
-#testFunction(B, Ef, ky, L, Z, N, n, method)
+testFunction(B, Ef, ky, y,L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
 #plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
-plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
+#plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
 
 #####################
 #To remember
