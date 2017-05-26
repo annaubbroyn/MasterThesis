@@ -4,12 +4,29 @@ from scipy import special as sp
 from scipy import misc
 from scipy.linalg import det
 from scipy import optimize as opt
-import mpmath
+from import mpmath
+
 #import math
 
+rmin = 1.0e20
+rmax = 1.0e-20
+fmin = 1.0e20
+fmax = 1.0e-20
+
+
 def y1(a,xi):
+	global rmin, rmax, fmin, fmax
 	res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
 	factor = np.exp(-0.25*xi**2)
+	if (rmin > mpmath.norm(res)):
+		rmin = res
+	elif (rmax < mpmath.norm(res)):
+		rmax = res
+	if (fmin > mpmath.norm(factor)):
+		fmin = res
+	elif (fmax < mpmath.norm(factor)):
+		fmax = res
+		
 	return (float(factor.real*res.real-factor.imag*res.imag)+1j*float(factor.real*res.imag+factor.imag*res.real))
 	
 def y2(a,xi):
@@ -52,7 +69,7 @@ def dY1(x,a,c,X,method):
 
 def dY2(x,a,c,X,method):
 	return Y2(a,c*(x+X),method)
-
+	
 def fun(E_,phi,y,B,ky,Ef,L,Z,method):
 
 	if isinstance(E_,float):
@@ -68,7 +85,11 @@ def fun(E_,phi,y,B,ky,Ef,L,Z,method):
 		E = 1.
 	elif E<-1:
 		E = -1.
+
+	if abs(phi) == np.pi/2:
+		phi +=0.01
 	
+		
 	nu = 2*Ef/B
 	beta = E/Ef
 	alpha = L/nu
@@ -221,14 +242,17 @@ def freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method):
 	
 	
 def dFreeEnergy(ky,phi,y,B,Ef,L,Z,kBT,method):
-	return misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
+	global rmin, rmax, fmin, fmax
+	a =  misc.derivative(freeEnergy,phi,args=(ky,y,B,Ef,L,Z,kBT,method),dx=0.001)
+	print(rmin, rmax, fmin, fmax)
+	return a
 	
 def currentDensity(y,phi,B,k_max,Ef,L,Z,kBT,method):
 	if(k_max == 0):
 		return dFreeEnergy(k_max,phi,y,B,Ef,L,Z,kBT,method)
 	kyMin = -k_max
 	kyMax = k_max
-	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method),limit=100)[0]
+	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(phi,y,B,Ef,L,Z,kBT,method),limit=10)[0]
 
 def totalCurrent(phi,B,k_max,Ef,L,W,Z,kBT,method,intLim):
 	yMin = -W/2
