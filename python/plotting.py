@@ -1,8 +1,12 @@
 import Functions
+import matplotlib
+matplotlib.use('Agg')
 from Functions import fun
 from Functions import freeEnergy
 from Functions import totalCurrent
 from matplotlib import pyplot as plt
+from Functions import parameters
+from Functions import myObject
 import time
 import os
 # nicer looking default plots
@@ -13,39 +17,52 @@ from scipy import optimize as opt
 ############################################################
 # E vs Phi
 
-def plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n,parabolic_method,variable,xVariable):
+def plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N,n):
 	print('plotAndSaveEvs',xVariable)
-	print('method',parabolic_method)
 	if variable is not 'ky' and xVariable is not 'ky':
-		print('ky',ky)
+		print('ky',param.ky)
 	if variable is not 'B' and xVariable is not 'B':
-		print('B',B)
+		print('B',param.B)
 	if variable is not 'Ef' and xVariable is not 'Ef':
-		print('Ef',Ef)
+		print('Ef',param.Ef)
 	if variable is not 'y' and xVariable is not 'y':
-		print('y',y)
+		print('y',param.y)
 	if variable is not 'phi' and xVariable is not 'phi':
-		print('phi',phi)
+		print('phi',param.phi)
 	print('N',N)
 	print('n',n)
 	x_array = np.linspace(start,end,figCount)
 	for x in x_array:
 		if variable is 'B':
-			B = x
-			print('B: ',B)
+			param.B = x
+			print('B: ',x)
 		elif variable is 'ky':
-			ky = x
-			print('ky: ',ky)
+			param.ky = x
+			print('ky: ',x)
 		elif variable is 'Ef':
-			Ef = x
-			print('Ef: ',Ef)
+			param.Ef = x
+			print('Ef: ',x)
 		elif variable is 'y':
-			y = x
-			print('y: ',y)
+			param.y = x
+			print('y: ',x)
 		elif variable is 'phi':
-			phi = x
-			print('phi: ',phi)
-		
+			param.phi = x
+			print('phi: ',x)
+		elif variable is 'Bmax':
+			param.Bmax = x
+			print('Bmax: ',x)
+		elif variable is 'Bmin':
+			param.Bmin = x
+			print('Bmin: ',x)
+		elif variable is 'kyInterp':
+			param.kyInterp = x
+			print('kyInterp: ',x)
+		elif variable is 'anum':
+			param.anum = x
+			print('anum: ',x)
+		elif variable is 'xnum':
+			param.xnum = x
+			print('xnum: ',x)
 		
 		de0 = 0.01
 		e0 = np.linspace(-1+de0,1-de0,n)
@@ -60,28 +77,46 @@ def plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n
 		success = np.zeros((n,N),dtype=bool)
 		maxDiff = 10**(-6)
 		
+		if xVariable is not 'B':
+			start_interp_time = time.time()
+			obj = myObject(param)
+			end_interp_time = time.time()
+			time_interp = end_interp_time - start_interp_time
+		
 		for i in range(N):
 			print('count:',i+1,'/',N)
 			num_success = 0
 			
 			if xVariable is 'y':
-				y = xVal_array[i]
+				param.y = xVal_array[i]
 			elif xVariable is 'phi':
-				phi=xVal_array[i]
+				param.phi=xVal_array[i]
 			elif xVariable is 'B':
-				B = xVal_array[i]
+				param.B = xVal_array[i]
+				start_interp_time = time.time()
+				obj = myObject(param)
+				end_interp_time = time.time()
+				time_interp = end_interp_time - start_interp_time
 			else:
 				print('xVariable is unvalid')
-				return -1
+				return
 			
-			start = time.time()
+
+			
 			for j in range(n):
-				rootResult = opt.root(fun,e0[j],args=(phi,y,B,ky,Ef,L,Z,parabolic_method))
-				#rootResult = opt.root(fun,e0[j],args=(phi_array[i],B,ky,Ef,L,Z,parabolic_method),method = 'lm',options={'maxiter': 1000})
+			
+				start = time.time()			
+				rootResult = opt.root(fun,e0[j],args=(obj,param))
+				end = time.time()
+				time_array[i] += end-start;
+			
 				temp_E_array[j][i] = float(rootResult.x[0])
 				success[j][i] = rootResult.success
 				if rootResult.success:
 					num_success += 1
+
+			time_array[i]=time_array[i]/n
+
 			if num_success == n:
 				E_array[0][i] = temp_E_array[0][i]
 				E_array[1][i] = temp_E_array[-1][i]
@@ -111,40 +146,46 @@ def plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n
 			E_array[1][i] = min(E_array[1][i],1.)
 			E_array[1][i] = max(E_array[1][i],-1.)
 			
-			"""
-			print('y',y)
-			print('phi',phi)
-			print('E1',E_array[0][i])
-			print('E2',E_array[1][i])
-			"""
-			
-			end = time.time()
-			time_array[i] = end-start;
 		
 		fig = plt.figure()
 		plt.plot(xVal_array,E_array[0],'.b')
 		plt.plot(xVal_array,E_array[1],'.b')
 		plt.axis([startXval,endXval,-1-0.1,1+0.1])
 		
-		path = 'figures/052617/Evs'+xVariable+'/figVariable_'+variable+'/'
+		path = 'figures/052717/Evs'+xVariable+'/figVariable_'+variable+'/'
 		folder = ""
 		title = 'E vs '+xVariable + ', ' + variable + ' = ' + str(x)
 		
 		if variable is not 'B' and xVariable is not 'B':
-			folder+='B_%.1f_'%B
-			title += ' B = %.1f' %B
+			folder+='B_%.1f_'%param.B
+			title += ' B = %.1f' %param.B
 		if variable is not 'Ef' and xVariable is not 'Ef':
-			folder+='Ef_%.1f_'%Ef
-			title += ' Ef = %.1f' %Ef
+			folder+='Ef_%.1f_'%param.Ef
+			title += ' Ef = %.1f' %param.Ef
 		if variable is not 'ky' and xVariable is not 'ky':
-			folder+='ky_%.3f_'%ky
-			title += ' ky = %.3f' %ky
+			folder+='ky_%.3f_'%param.ky
+			title += ' ky = %.3f' %param.ky
 		if variable is not 'y' and xVariable is not 'y':
-			folder+='y_%.1f_'%y		
-			title += ' y = %.1f' %y			
+			folder+='y_%.1f_'%param.y		
+			title += ' y = %.1f' %param.y			
 		if variable is not 'phi' and xVariable is not 'phi':
-			folder+='phi_%.1f_'%phi			
-			title += ' phi = %.1f' %phi
+			folder+='phi_%.1f_'%param.phi			
+			title += ' phi = %.1f' %param.phi
+		if variable is not 'Bmax' and xVariable is not 'Bmax':
+			folder+='Bmax_%.1f_'%param.Bmax			
+			title += ' Bmax = %.1f' %param.Bmax
+		if variable is not 'Bmin' and xVariable is not 'Bmin':
+			folder+='Bmin_%.1f_'%param.Bmin			
+			title += ' Bmin = %.1f' %param.Bmin
+		if variable is not 'kyInterp' and xVariable is not 'kyInterp':
+			folder+='kyInterp_%.1f_'%param.ky_max_interp		
+			title += 'kyInterp = %.1f' %param.ky_max_interp		
+		if variable is not 'anum' and xVariable is not 'anum':
+			folder+='anum_%.1f_'%param.anum		
+			title += 'anum = %.1f' %param.anum
+		if variable is not 'xnum' and xVariable is not 'xnum':
+			folder+='xnum_%.1f_'%param.xnum		
+			title += 'xnum = %.1f' %param.xnum
 		plt.title(title)
 		folder += '/'
 		folder = folder.replace('.','-')
@@ -152,14 +193,17 @@ def plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n
 		directory = os.path.dirname(path)
 		if not os.path.exists(directory):
 			os.makedirs(directory)
-		name = 'method_%s_%s_%.2f_N_%d_n_%d_from_%.2f_to_%.2f' % (method,variable,x,N,n,startXval,endXval)
+		name = '%s_%.2f_N_%d_n_%d_from_%.2f_to_%.2f' % (variable,x,N,n,startXval,endXval)
 		name = name.replace('.','-')
+		if param.interp:
+			name+='_interp'
 		fig.savefig(path+name+'.png')
 		plt.close(fig)
 		
 		fig = plt.figure()
 		plt.plot(xVal_array,time_array)
-		title = 'Time vs '+xVariable+' for ABS energy'
+		title = 'Time vs %s for ABS energy. Interpolation time %.2f' %(xVariable,time_interp)
+		plt.title(title)
 		fig.savefig(path+name+'_time.png')
 		plt.close(fig)
 		
@@ -201,58 +245,83 @@ def makePlotEvsKy(B,phi,Ef,L,Z,N,n,method):
 
 ########################################################
 # F vs Phi
-def plotAndSaveFvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,method,variable,xVariable):
+def plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N):
 #def plotAndSaveFvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,method,variable):
 	print('plotAndSaveFvs',xVariable)
-	print('method',method)
 	if variable is not 'ky' and xVariable is not 'ky':
-		print('ky',ky)
+		print('ky',param.ky)
 	if variable is not 'B' and xVariable is not 'B':
-		print('B',B)
+		print('B',param.B)
 	if variable is not 'Ef' and xVariable is not 'Ef':
-		print('Ef',Ef)
+		print('Ef',param.Ef)
 	if variable is not 'y' and xVariable is not 'y':
-		print('y',y)
+		print('y',param.y)
 	if variable is not 'phi' and xVariable is not 'phi':
-		print('phi',phi)
+		print('phi',param.phi)
 	print('N',N)
 	x_array = np.linspace(start,end,figCount)
 	
 	
 	for x in x_array:
 		if variable is 'B':
-			B = x
-			print('B: ',B)
+			param.B = x
+			print('B: ',x)
 		elif variable is 'ky':
-			ky = x
-			print('ky: ',ky)
+			param.ky = x
+			print('ky: ',x)
 		elif variable is 'Ef':
-			Ef = x
-			print('Ef: ',Ef)
+			param.Ef = x
+			print('Ef: ',x)
 		elif variable is 'y':
-			y = x
-			print('y: ',y)
+			param.y = x
+			print('y: ',x)
 		elif variable is 'phi':
-			phi = x
-			print('phi: ',phi)
+			param.phi = x
+			print('phi: ',x)
+		elif variable is 'Bmax':
+			param.Bmax = x
+			print('Bmax: ',x)
+		elif variable is 'Bmin':
+			param.Bmin = x
+			print('Bmin: ',x)
+		elif variable is 'kyInterp':
+			param.kyInterp = x
+			print('kyInterp: ',x)
+		elif variable is 'anum':
+			param.anum = x
+			print('anum: ',x)
+		elif variable is 'xnum':
+			param.xnum = x
+			print('xnum: ',x)
+		
+		
+		if xVariable is not 'B':
+			start_interp_time = time.time()
+			obj = myObject(param)
+			end_interp_time = time.time()
+			time_interp = end_interp_time - start_interp_time
 		
 		xVal_array = np.linspace(startXval,endXval, N)
 		F_array = np.zeros(xVal_array.shape)
 		time_array = np.zeros(xVal_array.shape)
 		for i in range(N):
 			if xVariable is 'y':
-				y = xVal_array[i]
+				param.y = xVal_array[i]
 			elif xVariable is 'phi':
-				phi=xVal_array[i]
+				param.phi=xVal_array[i]
 			elif xVariable is 'B':
-				B = xVal_array[i]
+				param.B = xVal_array[i]
+				start_interp_time = time.time()
+				obj = myObject(param)
+				end_interp_time = time.time()
+				time_interp = end_interp_time - start_interp_time
 			else:
 				print('xVariable is unvalid')
 				return -1
 		
 			print('count:',i+1,'/',N)
 			start = time.time()
-			F_array[i] = freeEnergy(phi,ky,y,B,Ef,L,Z,kBT,method)
+			F_array[i] = freeEnergy(param.phi,obj,param)
 			end = time.time()
 			time_array[i] = end-start
 		
@@ -260,25 +329,41 @@ def plotAndSaveFvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,m
 		plt.plot(xVal_array,F_array,'.')
 		plt.axis([startXval,endXval,-2,-1])
 		
-		path = 'figures/052617/Fvs'+xVariable+'/figVariable_'+variable+'/'
+		path = 'figures/052717/Fvs'+xVariable+'/figVariable_'+variable+'/'
 		folder = ""
 		title = 'F vs '+xVariable + ', ' + variable + ' = ' + str(x)
 		
 		if variable is not 'B' and xVariable is not 'B':
-			folder+='B_%.1f_'%B
-			title += ' B = %.1f' %B
+			folder+='B_%.1f_'%param.B
+			title += ' B = %.1f' %param.B
 		if variable is not 'Ef' and xVariable is not 'Ef':
-			folder+='Ef_%.1f_'%Ef
-			title += ' Ef = %.1f' %Ef
+			folder+='Ef_%.1f_'%param.Ef
+			title += ' Ef = %.1f' %param.Ef
 		if variable is not 'ky' and xVariable is not 'ky':
-			folder+='ky_%.3f_'%ky
-			title += ' ky = %.3f' %ky
+			folder+='ky_%.3f_'%param.ky
+			title += ' ky = %.3f' %param.ky
 		if variable is not 'y' and xVariable is not 'y':
-			folder+='y_%.1f_'%y		
-			title += ' y = %.1f' %y			
+			folder+='y_%.1f_'%param.y		
+			title += ' y = %.1f' %param.y			
 		if variable is not 'phi' and xVariable is not 'phi':
-			folder+='phi_%.1f_'%phi			
-			title += ' phi = %.1f' %phi
+			folder+='phi_%.1f_'%param.phi			
+			title += ' phi = %.1f' %param.phi
+		if variable is not 'Bmax' and xVariable is not 'Bmax':
+			folder+='Bmax_%.1f_'%param.Bmax			
+			title += ' Bmax = %.1f' %param.Bmax
+		if variable is not 'Bmin' and xVariable is not 'Bmin':
+			folder+='Bmin_%.1f_'%param.Bmin			
+			title += ' Bmin = %.1f' %param.Bmin
+		if variable is not 'kyInterp' and xVariable is not 'kyInterp':
+			folder+='kyInterp_%.1f_'%param.ky_max_interp		
+			title += 'kyInterp = %.1f' %param.ky_max_interp		
+		if variable is not 'anum' and xVariable is not 'anum':
+			folder+='anum_%.1f_'%param.anum		
+			title += 'anum = %.1f' %param.anum
+		if variable is not 'xnum' and xVariable is not 'xnum':
+			folder+='xnum_%.1f_'%param.xnum		
+			title += 'xnum = %.1f' %param.xnum
+		
 		plt.title(title)
 		folder += '/'
 		folder = folder.replace('.','-')
@@ -286,73 +371,27 @@ def plotAndSaveFvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,m
 		directory = os.path.dirname(path)
 		if not os.path.exists(directory):
 			os.makedirs(directory)
-		name = 'method_%s_%s_%.2f_N_%d_from_%.2f_to_%.2f' % (method,variable,x,N,startXval,endXval)
+		name = '%s_%.2f_N_%d_n_%d_from_%.2f_to_%.2f' % (variable,x,N,n,startXval,endXval)
 		name = name.replace('.','-')
+		if param.interp:
+			name+='_interp'
 		fig.savefig(path+name+'.png')
 		plt.close(fig)
 		
 		fig = plt.figure()
 		plt.plot(xVal_array,time_array)
-		title = 'Time vs '+xVariable+' for ABS energy'
-		fig.savefig(path+name+'_time.png')
-		plt.close(fig)
-		
-		
-		"""
-		#Plotting free energy
-		fig = plt.figure()
-		plt.plot(xVal_array,F_array,'.')
-		plt.axis([startXval,endXval,-2,-1])
-		title = 'B = '+str(B) + ', Ef='+str(Ef) + ', ky='+str(ky)
-		plt.title(title)
-		path = 'figures/050617/FvsPhi/Variable_'+variable+'/'
-		folder = ""
-		if variable is 'B':
-			folder = 'Ef_%.1f_ky_%.3f/'%(Ef,ky)
-		elif variable is 'Ef':
-			folder = 'B_%.1f_ky_%.3f/'%(B,ky)
-		elif variable is 'ky':
-			folder = 'Ef_%.1f_B_%.1f/'%(Ef,B)
-		folder = folder.replace('.','-')
-		path += folder
-		directory = os.path.dirname(path)
-		if not os.path.exists(directory):
-			os.makedirs(directory)
-		name = 'method_%s_%s_%.2f_N_%d_y_%.2f_kmax_%.2f' % (method,variable,x,N,y,ky)
-		name = name.replace('.','-')
-		fig.savefig(path+name+'.png')
-		plt.close(fig)
-		
-		#Plotting time
-		fig = plt.figure()
-		plt.plot(phi_array,time_array)
-		title = 'Time vs phi for free energy'
+		title = 'Time vs %s for Free energy. Interpolation time %.2f' %(xVariable,time_interp)
 		plt.title(title)
 		fig.savefig(path+name+'_time.png')
 		plt.close(fig)
-		"""
+		
 ########################################################
 # Current vs Phi
-
-def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim):
+def plotAndSaveCurrentvsPhi(start,end,figCount,param,N):
 	print('plotAndSaveCurrentvsPhi')
-	print('method',method)
-	if variable is not 'B':
-		print('B',B)
-	if variable is not 'Ef':
-		print('Ef',Ef)
-	print('N',N)
-	x_array = np.linspace(start,end,figCount)
-	for x in x_array:
-		if variable is 'B':
-			B = x
-			print('B: ',B)
-		elif variable is 'ky':
-			ky = x
-			print('ky: ',ky)
-		elif variable is 'Ef':
-			Ef = x
-			print('Ef: ',Ef)
+	B_array = np.linspace(start,end,figCount)
+	for B in B_array:
+		param.B = B
 		phi_start = -np.pi
 		phi_end = np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
@@ -360,39 +399,40 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,var
 		for i in range(N):
 			print('count:',i+1,'/',N)
 			print('      phi = ',phi_array[i])
+			param.phi = phi_array[i]
 			start = time.time()
-			I_array[i] = totalCurrent(phi_array[i],B,k_max,Ef,L,W,Z,kBT,method,intLim)
+			I_array[i] = totalCurrent(param)
 			end = time.time()
 			print('time spent: ',end-start)
 			print(' ')
-		print('test 1')
 		fig = plt.figure()
-		print('test 2')
 		plt.plot(phi_array,I_array,'.')
-		print('test 3')
-		#plt.axis([phi_start,phi_end,-2,-1])
-		title = 'B = '+str(B) + ', Ef='+str(Ef)
+		title = 'B = %.2f' % B
 		plt.title(title)
-		path = 'figures/050617/IvsPhi/withGauge/Variable_'+variable+'/'
+		path = 'figures/052717/IvsPhi/'
+		
 		folder = ""
-		if variable is 'B':
-			folder = 'Ef_%.1f/k_max_%.2f/'% (Ef,k_max)
-		elif variable is 'Ef':
-			folder = 'B_%.1f/k_max_%.2f/'% (B,k_max)
+		folder+='Ef_%.1f_'%param.Ef
+		folder+='Bmax_%.1f_'%param.Bmax			
+		folder+='Bmin_%.1f_'%param.Bmin			
+		folder+='kyInterp_%.1f_'%param.ky_max_interp		
+		folder+='kyInt_%.1f_'%param.ky_max_int	
+		folder+='anum_%.1f_'%param.anum		
+		folder+='xnum_%.1f_'%param.xnum		
 		folder = folder.replace('.','-')
+		
 		path += folder
-		print('test 4')
+	
 		directory = os.path.dirname(path)
 		if not os.path.exists(directory):
 			os.makedirs(directory)
-		print('test 5')
-		name = 'method_%s_%s_%.2f_N_%d_n_%d_W_%.2f_kmax_%.2f_limit_%d' % (method,variable,x,N,n,W,k_max,intLim)
+			
+		name = 'B_%.2f' % B
 		name = name.replace('.','-')
-		print('test 6')
+	
 		fig.savefig(path+name+'.png')
-		print('test 7')
 		plt.close(fig)
-		print('test 8')
+
 
 		
 def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method,intLim):
@@ -456,57 +496,76 @@ def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 	plt.show()
 	
 	
+def shellPlot(param):
+	param.ky = 0.
+	param.B = 1.
+	param.Bmin = 0
+	param.Bmax = 0
+	param.ky_max_interp = ky
+	param.anum = 50
+	param.xnum = 500
 	
- #################HVORFOR VIL IKKE TESTFUNCTION PLOTTE???????
-   
+	N = 50
+	xVariable = 'phi'
+	startXval = -3*np.pi
+	endXval = 3*np.pi
+	
+	
+	B = [0.1, 1., 2., 4., 6., 8.]
+	
+	for i in range(0,6):
+		figCount = 5
+		variable = 'ky'
+		start = 0.
+		end = 0.6
+		
+		param.B = B[i]
+		
+		param.interp = True
+		plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
+		param.interp = False
+		plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
+	
 
-intLim = 50
-Z = 0.
-L = 106.7
-n = 4
-Ef = 500.
-kBT = 1.
-
-method = 'y1y2'
-#method = 'pcfuToy1y2'
-#method = 'pcfu'
-
-#variable = 'Ef'
-#variable = 'ky'
-
-W = L
-k_max = 0.
+		
+y = 0.
 ky = 0.
-B = 1.
 phi = np.pi
-y = 0.#4*Ef**2/(B**2*L)
+B = 1.
+Bmin = 0
+Bmax = 0
+ky_max = 0.
+ky_max_interp = ky
+anum = 10
+xnum = 100
+Ef = 500.
+L = 106.7
+W = L
+Z = 0.
+kBT = 1.
+n = 4
+interp = True
 
 figCount = 1
 variable = 'B'
 start = 1.
 end = 8.
 
-N = 50
+N = 20
 xVariable = 'phi'
-#startXval = -W/2
-#endXval = W/2
 startXval = -3*np.pi
 endXval = 3*np.pi
 
-print('plotting 1')
+param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,kBT,interp)
 
-plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n,method,variable,xVariable)
-
-print('plotting 2')
-
-#plotAndSaveFvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,method,variable,xVariable)
-#plotAndSaveFvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,method,variable)
-#plotAndSaveEvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,n,method,variable)
-#makePlotEvsPhi(B,ky,Ef,L,Z,100,n,method)
+#shellPlot(param)
+#plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N,n)
+#plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
 #makePlotEvsKy(B,phi,Ef,L,Z,100,n,method)
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, y, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
+plotAndSaveCurrentvsPhi(start,end,figCount,param,N)
 #plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
 #plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
 
