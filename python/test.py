@@ -23,16 +23,17 @@ def y2(xi,a):
 	
 EF = 500.
 Bmin = 1.
-Bmax = 8.
+Bmax = 1.
 L = 106.7
+kymax = 0.1
 
 amin = -(EF + 1)/Bmin
 amax = -(EF - 1)/Bmin
-anum = 50
+anum = 500
 
-xmin = -np.sqrt(Bmax/EF)
-xmax = +np.sqrt(Bmax/EF) * (1 + Bmax*L/(2*EF))
-xnum = 50
+xmin = -2*np.sqrt(EF/Bmin)*(kymax + Bmax*L/(2*EF))
+xmax =  2*np.sqrt(EF/Bmin)*(kymax + Bmax*L/(2*EF))
+xnum = 500
 
 avec = np.linspace(amin, amax, anum)
 xvec = np.linspace(xmin, xmax, xnum)
@@ -68,6 +69,15 @@ dy1real = np.zeros(100)
 dY1real = np.zeros(100)
 dy2real = np.zeros(100)
 dY2real = np.zeros(100)
+y1imag = np.zeros(100)
+Y1imag = np.zeros(100)
+y2imag = np.zeros(100)
+Y2imag = np.zeros(100)
+dy1imag = np.zeros(100)
+dY1imag = np.zeros(100)
+dy2imag = np.zeros(100)
+dY2imag = np.zeros(100)
+
 
 
 """
@@ -98,7 +108,9 @@ plt.show()
 """
 
 a = (amin+amax)/2
-x = np.linspace(xmin,xmax,100)
+print('xmin',xmin)
+print('xmax',xmax)
+x = np.linspace(-10,10,100)
 for i in range(100):
 	y1real[i] = y1(x[i],a).real
 	Y1real[i] = Y1(x[i],a).real
@@ -108,45 +120,60 @@ for i in range(100):
 	dY1real[i] = misc.derivative(Y1,x[i],args=(a,),dx=0.001).real
 	dy2real[i] = misc.derivative(y2,x[i],args=(a,),dx=0.001).real
 	dY2real[i] = misc.derivative(Y2,x[i],args=(a,),dx=0.001).real
+	y1imag[i] = y1(x[i],a).imag
+	Y1imag[i] = Y1(x[i],a).imag
+	y2imag[i] = y2(x[i],a).imag
+	Y2imag[i] = Y2(x[i],a).imag
+	dy1imag[i] = misc.derivative(y1,x[i],args=(a,),dx=0.001).imag
+	dY1imag[i] = misc.derivative(Y1,x[i],args=(a,),dx=0.001).imag
+	dy2imag[i] = misc.derivative(y2,x[i],args=(a,),dx=0.001).imag
+	dY2imag[i] = misc.derivative(Y2,x[i],args=(a,),dx=0.001).imag
 
 
 #print('y1real',y1real)
 #print('Y1real',Y1real)
 #print('y2real',y2real)
 #print('Y2real',Y2real)
-"""
-plt.figure()
-plt.plot(x,y1real)
-plt.show()
 
 plt.figure()
+plt.plot(x,y1real)
 plt.plot(x,Y1real)
 plt.show()
 
 plt.figure()
 plt.plot(x,y2real)
-plt.show()
-
-plt.figure()
 plt.plot(x,Y2real)
 plt.show()
-"""
+
 plt.figure()
-plt.plot(x,dy1real)
+plt.plot(x,dy1imag)
+plt.plot(x,dY1imag)
 plt.show()
 
 plt.figure()
-plt.plot(x,dY1real)
+plt.plot(x,dy2imag)
+plt.plot(x,dY2imag)
 plt.show()
 
 plt.figure()
-plt.plot(x,dy2real)
+plt.plot(x,y1imag)
+plt.plot(x,Y1imag)
 plt.show()
 
 plt.figure()
-plt.plot(x,dY2real)
+plt.plot(x,y2imag)
+plt.plot(x,Y2imag)
 plt.show()
 
+plt.figure()
+plt.plot(x,dy1imag)
+plt.plot(x,dY1imag)
+plt.show()
+
+plt.figure()
+plt.plot(x,dy2imag)
+plt.plot(x,dY2imag)
+plt.show()
 
 
 	

@@ -2,9 +2,7 @@ import Functions
 from Functions import fun
 from Functions import freeEnergy
 from Functions import totalCurrent
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 import time
 import os
 # nicer looking default plots
@@ -433,7 +431,6 @@ def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method,intLim):
 
 ########################################################
 # Current vs B
-
 	
 def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 	print('testFunction')
@@ -443,14 +440,11 @@ def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 	print('B',B)
 	print('n',n)
 	print('N',N)
-	phi_start = -3*np.pi
-	phi_end = 3*np.pi
+	phi_start = -np.pi
+	phi_end = np.pi
 	phi = np.linspace(phi_start,phi_end,n)
 	E_array = np.linspace(-1,1,N)
 	Func_array = np.zeros(E_array.shape)
-	plt.figure()
-	plt.plot(phi,phi)
-	plt.show()
 	plt.figure()
 	for j in range(n):
 		print('count:',j+1,'/',n)
@@ -458,15 +452,16 @@ def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 			Func_array[i] = fun([E_array[i]],phi[j],y,B,ky,Ef,L,Z,method)[0]
 		plotLabel='phi = '+str(phi[j])
 		plt.plot(E_array,Func_array,label=plotLabel)
-		plt.show()
 	plt.legend()
+	plt.show()
+	
 	
 	
  #################HVORFOR VIL IKKE TESTFUNCTION PLOTTE???????
    
 
 intLim = 50
-Z = 0
+Z = 0.
 L = 106.7
 n = 4
 Ef = 500.
@@ -486,7 +481,7 @@ B = 1.
 phi = np.pi
 y = 0.#4*Ef**2/(B**2*L)
 
-figCount = 5
+figCount = 1
 variable = 'B'
 start = 1.
 end = 8.
@@ -498,17 +493,23 @@ xVariable = 'phi'
 startXval = -3*np.pi
 endXval = 3*np.pi
 
-#plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n,method,variable,xVariable)
+print('plotting 1')
+
+plotAndSaveEvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,n,method,variable,xVariable)
+
+print('plotting 2')
+
 #plotAndSaveFvsPhi(start,end,figCount,startXval,endXval,phi,B,ky,y,Ef,L,Z,N,method,variable,xVariable)
 #plotAndSaveFvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,method,variable)
 #plotAndSaveEvsPhi(start,end,figCount,B,ky,y,Ef,L,Z,N,n,method,variable)
 #makePlotEvsPhi(B,ky,Ef,L,Z,100,n,method)
 #makePlotEvsKy(B,phi,Ef,L,Z,100,n,method)
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
-testFunction(B, Ef, ky, y,L, Z, N, n, method)
+#testFunction(B, Ef, ky, y, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
 #plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
 #plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
+
 
 #####################
 #To remember

@@ -10,7 +10,6 @@ from scipy.interpolate import interp2d
 def y1(xi,a):
 	res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
 	factor = mpmath.exp(-0.25*xi**2)
-		
 	return complex(factor*res)
 	
 def y2(xi,a):
@@ -19,19 +18,23 @@ def y2(xi,a):
 	return complex(factor*res)
 	
 ############################
+print('Functions 1')
 
 EF = 500.
 Bmin = 1.
-Bmax = 8.
+Bmax = 5.
 L = 106.7
+kymax = 0.2
 
 amin = -(EF + 1)/Bmin
 amax = -(EF - 1)/Bmin
-anum = 100
+anum = 50
 
-xmin = -np.sqrt(Bmax/EF)
-xmax = +np.sqrt(Bmax/EF) * (1 + Bmax*L/(2*EF))
-xnum = 100
+xmin = -2*np.sqrt(EF/Bmin)*(kymax + Bmax*L/(2*EF))
+xmax =  2*np.sqrt(EF/Bmin)*(kymax + Bmax*L/(2*EF))
+#xmin = -np.sqrt(Bmax/EF)
+#xmax = +np.sqrt(Bmax/EF) * (1 + Bmax*L/(2*EF))
+xnum = 50
 
 avec = np.linspace(amin, amax, anum)
 xvec = np.linspace(xmin, xmax, xnum)
@@ -49,20 +52,24 @@ y1_int_im = interp2d(xvec, avec, y1_val.imag, kind='cubic')
 y2_int_re = interp2d(xvec, avec, y2_val.real, kind='cubic')
 y2_int_im = interp2d(xvec, avec, y2_val.imag, kind='cubic')
 
+print('Functions 2')
+
 def Y1(x, a):
-	return y1(x,a)
 	return complex(y1_int_re(x, a)[0], y1_int_im(x,a)[0])
 	
 def Y2(x, a):
-	return y2(x,a)
 	return complex(y2_int_re(x, a)[0], y2_int_im(x,a)[0])
 
-
+print('Functions 3')
+	
 ############################
 	
 
 	
 def fun(E_,phi,y,B,ky,Ef,L,Z,method):
+	print('fun 1')
+	
+	
 	E = E_[0]
 	
 	if E>1:
@@ -149,6 +156,8 @@ def fun(E_,phi,y,B,ky,Ef,L,Z,method):
 					   [0, 0, dD1_hR, dD2_hR, 0, 0, (-ZR-1j)*qh, (-ZR+1j)*qe]])
 	
 	D = det(matrix)
+	
+	print('fun 2')
 	
 	return [D.real,D.imag]
 
