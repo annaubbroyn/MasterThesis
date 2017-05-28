@@ -6,6 +6,7 @@ from scipy.linalg import det
 from scipy import optimize as opt
 import mpmath 
 from scipy.interpolate import interp2d 
+from copy import deepcopy as copy
 
 def y1(xi,a):
 	res = mpmath.hyp1f1(0.5*a+0.25,0.5,0.5*xi**2)
@@ -20,7 +21,7 @@ def y2(xi,a):
 ############################
 
 class parameters:
-	def __init__(self,y = 0,ky = 0,phi=0,B=1,Bmin=0,Bmax=0,ky_max_int=0,ky_max_interp=0,anum=10,xnum=10,Ef=500,L=106.7,W=1067.,Z=0,kBT=1,interp = True):
+	def __init__(self,y = 0,ky = 0,phi=0,B=1,Bmin=0,Bmax=0,ky_max_int=0,ky_max_interp=0,anum=10,xnum=10,Ef=500,L=106.7,W=1067.,Z=0,kBT=1,interp = True,dbl=False):
 		self.y = y
 		self.ky = ky
 		self.phi = phi
@@ -37,6 +38,7 @@ class parameters:
 		self.ky_max_int = ky_max_int
 		self.ky_max_interp = ky_max_interp
 		self.interp = interp
+		self.dbl = dbl
 
 class myObject:
 	def __init__(self,param):
@@ -122,13 +124,16 @@ def fun(E_,obj,param):
 	y = param.y
 	
 	if E>1:
+		#return E-1
 		E = 1.
 	elif E<-1:
+		#return E+1
 		E = -1.
 
+	"""
 	if abs(phi) == np.pi/2:
 		phi +=0.01
-	
+	"""
 		
 	nu = 2*Ef/B
 	beta = E/Ef
@@ -211,7 +216,8 @@ def fun(E_,obj,param):
 
 def freeEnergy(phi,obj,param):
 	param.phi = phi
-	
+	#print('phi',phi)
+	#print('y',param.y)
 	n=4
 	de0 = 0.01
 	e0 = np.linspace(-1+de0,1-de0,n)
@@ -222,7 +228,7 @@ def freeEnergy(phi,obj,param):
 	num_success = 0
 	#for j in range(n):
 	for j in range(n):
-		rootResult = opt.root(fun,e0[j],args=(obj,param))
+		rootResult = opt.root(fun,e0[j],args=(obj,param),method='lm',options={'xtol': 1e-08,})
 		temp_E_array[j] = rootResult.x[0]
 		success[j] = rootResult.success
 		if rootResult.success:
@@ -245,9 +251,9 @@ def freeEnergy(phi,obj,param):
 				E_array[1] = temp_E_array[j]
 				break
 			if j == n-1:
-				if temp_E_array[0]>0.9999:
+				if temp_E_array[0]>1.:
 					E_array[1] = 1.
-				elif temp_E_array[0]<-0.9999:
+				elif temp_E_array[0]<-1.:
 					E_array[1] = -1.
 				else:
 					E_array[1] = E_array[0]
@@ -263,21 +269,42 @@ def freeEnergy(phi,obj,param):
 
 	
 def dFreeEnergy(ky,param):
-	param.ky = ky
-	obj=myObject(param)
-	return  misc.derivative(freeEnergy,param.phi,args=(obj,param),dx=0.001)
+	param_copy = copy(param)
+	param_copy.ky = ky
+	phi = param_copy.phi
+	obj=myObject(param_copy)
+	return  misc.derivative(freeEnergy,phi,args=(obj,param_copy),dx=0.1)
 	
 def currentDensity(y,param):
-	print(y)
-	param.y = y
-	k_max = param.ky_max_int
+	param_copy = copy(param)
+	param_copy.y = y
+	k_max = param_copy.ky_max_int
 	if(k_max == 0):
-		return dFreeEnergy(k_max,param)
+		return dFreeEnergy(0.,param_copy)
 	kyMin = -k_max
 	kyMax = k_max
-	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(param),limit=50)[0]
+	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(param_copy),limit=50)[0]
 
 def totalCurrent(param):
+	if param.W == 0:
+		return currentDensity(param.y,param)
 	yMin = -param.W/2
 	yMax = param.W/2
-	return integrate.quad(currentDensity,yMin,yMax,args=(param,),limit=50)[0]
+	return integrate.quad(currentDensity,yMin,yMax,args=(copy(param),),limit=50)[0]
+
+def dFreeEnergy2(ky,y,param):
+	param_copy = copy(param)
+	param_copy.ky = ky
+	param_copy.y = y
+	phi = param_copy.phi
+	obj=myObject(param_copy)
+	return  misc.derivative(freeEnergy,phi,args=(obj,param_copy),dx=0.1)
+
+def totalCurrent2(param):
+	yMin = -param.W/2
+	yMax = param.W/2
+	kyMin = -param_copy.ky_max_int
+	kyMax = k_max = param_copy.ky_max_int
+	return integrate.dblquad(dFreeEnergy2,yMin,yMax,kyMin,kyMax,args=(copy(param)))
+	
+	
