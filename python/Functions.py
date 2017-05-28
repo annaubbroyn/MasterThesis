@@ -71,10 +71,6 @@ class myObject:
 		xmin = -2*np.sqrt(EF/Bmin)*ky_max
 		xmax =  2*np.sqrt(EF/Bmin)*(ky_max + Bmax*L/(2*EF))
 
-		#print(xmin)
-		#print(xmax)
-		#print(amin)
-		#print(amax)
 		xmin -=0.1
 		xmax +=0.1
 		amin -=0.1
@@ -124,10 +120,8 @@ def fun(E_,obj,param):
 	y = param.y
 	
 	if E>1:
-		#return E-1
 		E = 1.
 	elif E<-1:
-		#return E+1
 		E = -1.
 
 	"""
@@ -216,8 +210,6 @@ def fun(E_,obj,param):
 
 def freeEnergy(phi,obj,param):
 	param.phi = phi
-	#print('phi',phi)
-	#print('y',param.y)
 	n=4
 	de0 = 0.01
 	e0 = np.linspace(-1+de0,1-de0,n)
@@ -226,7 +218,6 @@ def freeEnergy(phi,obj,param):
 	success = np.zeros(n,dtype=bool)
 	maxDiff = 10**(-6)
 	num_success = 0
-	#for j in range(n):
 	for j in range(n):
 		rootResult = opt.root(fun,e0[j],args=(obj,param),method='lm',options={'xtol': 1e-08,})
 		temp_E_array[j] = rootResult.x[0]
@@ -279,6 +270,7 @@ def currentDensity(y,param):
 	param_copy = copy(param)
 	param_copy.y = y
 	k_max = param_copy.ky_max_int
+	#print('phi in totalCurrent',param_copy.phi)
 	if(k_max == 0):
 		return dFreeEnergy(0.,param_copy)
 	kyMin = -k_max
@@ -286,11 +278,13 @@ def currentDensity(y,param):
 	return integrate.quad(dFreeEnergy,kyMin,kyMax,args=(param_copy),limit=50)[0]
 
 def totalCurrent(param):
+	copy_param = copy(param)
 	if param.W == 0:
-		return currentDensity(param.y,param)
-	yMin = -param.W/2
-	yMax = param.W/2
-	return integrate.quad(currentDensity,yMin,yMax,args=(copy(param),),limit=50)[0]
+		return currentDensity(copy_param.y,copy_param)
+	yMin = -copy_param.W/2
+	yMax = copy_param.W/2
+	print('phi in totalCurrent',copy_param.phi)
+	return integrate.quad(currentDensity,yMin,yMax,args=(copy_param,),limit=50)[0]
 
 def dFreeEnergy2(ky,y,param):
 	param_copy = copy(param)
@@ -301,10 +295,11 @@ def dFreeEnergy2(ky,y,param):
 	return  misc.derivative(freeEnergy,phi,args=(obj,param_copy),dx=0.1)
 
 def totalCurrent2(param):
-	yMin = -param.W/2
-	yMax = param.W/2
+	param_copy = copy(param)
+	yMin = -param_copy.W/2
+	yMax = param_copy.W/2
 	kyMin = -param_copy.ky_max_int
 	kyMax = k_max = param_copy.ky_max_int
-	return integrate.dblquad(dFreeEnergy2,yMin,yMax,kyMin,kyMax,args=(copy(param)))
+	return integrate.dblquad(dFreeEnergy2,yMin,yMax,kyMin,kyMax,args=(param_copy))[0]
 	
 	

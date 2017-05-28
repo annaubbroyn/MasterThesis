@@ -4,6 +4,7 @@ matplotlib.use('Agg')
 from Functions import fun
 from Functions import freeEnergy
 from Functions import totalCurrent
+from Functions import totalCurrent2
 from Functions import currentDensity
 from Functions import dFreeEnergy
 from matplotlib import pyplot as plt
@@ -536,16 +537,19 @@ def plotAndSaveCurrentDensityvsy(variable,start,end,figCount,starty,endy,param,N
 def plotAndSaveCurrentvsPhi(start,end,figCount,param,N):
 	print('plotAndSaveCurrentvsPhi')
 	B_array = np.linspace(start,end,figCount)
+	init_param = copy(param)
 	for B in B_array:
-		param.B = B
+		#phi_start = -np.pi
 		phi_start = -np.pi
 		phi_end = np.pi
 		phi_array = np.linspace(phi_start, phi_end, N)
 		I_array = np.zeros(phi_array.shape)
 		for i in range(N):
+			param = init_param
+			param.B = B
+			param.phi = phi_array[i]
 			print('count:',i+1,'/',N)
 			print('      phi = ',phi_array[i])
-			param.phi = phi_array[i]
 			start = time.time()
 			if param.dbl:
 				I_array[i] = totalCurrent2(copy(param))
@@ -579,6 +583,10 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,param,N):
 		name = 'B_%.2f' % B
 		name += 'W_%.f' % param.W
 		name += 'y_%.f' % param.y
+		if param.interp:
+			name += '_interp'
+		if param.dbl:
+			name += '_dbl'
 		name = name.replace('.','-')
 	
 		fig.savefig(path+name+'.png')
@@ -807,13 +815,13 @@ phi = 0.
 B = 1.
 Bmin = 0
 Bmax = 0
-ky_max = 0.
+ky_max = 0.5
 ky_max_interp = ky
 anum = 10
 xnum = 100
 Ef = 500.
 L = 106.7
-W = L/2
+W = L/4
 Z = 0.
 kBT = 1.
 n = 4
@@ -823,7 +831,7 @@ y = 0.
 
 figCount = 1
 variable = 'phi'
-start = -2.8108986900540254
+start = -np.pi
 end = 0.1
 
 N = 20
@@ -842,7 +850,7 @@ param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, y, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-plotAndSaveCurrentvsPhi(1.,5.,figCount,param,N)
+plotAndSaveCurrentvsPhi(1.,5.,5,param,N)
 #plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
 #plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
 
