@@ -715,30 +715,68 @@ def plotAndSavedFreeEnergyvsy(variable,start,end,figCount,starty,endy,param,N):
 		fig.savefig(path+name+'_time.png')
 		plt.close(fig)
 
-		
-def plotAndSaveCurrentvsB(B_start,B_end,k_max,Ef,L,W,Z,kBT,N,method,intLim):
+def plotAndSaveCurrentvsB(B_start,B_end,param,N):
 	print('plotAndSaveCurrentvsB')
-	print('method',method)
-	print('Ef',Ef)
-	print('N',N)
-	print('k_max',k_max)
+	print('k_max',param.ky_max_int)
+	init_param = copy(param)
 	B_array = np.linspace(B_start,B_end,N)
-	phi = np.pi/2
+	phi_array = np.linspace(0.,np.pi, 10)
 	I_array = np.zeros(B_array.shape)
+	temp_I_array = np.zeros(phi_array.shape)
 	for i in range(N):
 		print('count:',i+1,'/',N)
 		print('B: ',B_array[i])
-		start = time.time()
-		I_array[i] = totalCurrent(phi,B_array[i],k_max,Ef,L,W,Z,kBT,method,intLim)
-		end = time.time()
-		print('time spent: ',end-start)
+		for j in range(10):
+			param = copy(init_param)
+			param.B = B_array[i]
+			param.phi = phi_array[j]
+			start = time.time()
+			temp_I_array[j] = totalCurrent(param)
+			end = time.time()
+			print('time spent: ',end-start)
 		print(' ')
+		I_array[i] = np.amax(temp_I_array)
 	fig = plt.figure()
 	plt.plot(B_array,I_array,'.')
-	#plt.axis([phi_start,phi_end,-2,-1])
+	
+	title = 'I vs B'
+	plt.title(title)
+	path = 'figures/052717/IvsB/'
+	
+	folder = ""
+	folder+='Ef_%.1f_'%param.Ef
+	folder+='Bmax_%.1f_'%param.Bmax			
+	folder+='Bmin_%.1f_'%param.Bmin			
+	folder+='kyInterp_%.1f_'%param.ky_max_interp		
+	folder+='kyInt_%.1f_'%param.ky_max_int	
+	folder+='anum_%.1f_'%param.anum		
+	folder+='xnum_%.1f_'%param.xnum		
+	folder = folder.replace('.','-')
+	
+	path += folder
+
+	directory = os.path.dirname(path)
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+		
+	name = 'W_%.f' % param.W
+	name += 'y_%.f' % param.y
+	if param.interp:
+		name += '_interp'
+	name = name.replace('.','-')
+
+	fig.savefig(path+name+'.png')
+	plt.close(fig)
+
+	
+	
+	
+	
+	
+	
 	title = 'Current vs magnetic field'
 	plt.title(title)
-	path = 'figures/050617/IvsB/withGauge/'
+	path = 'figures/052717/IvsB/'
 	folder = 'Ef_%.1f/'%Ef
 	folder = folder.replace('.','-')
 	path += folder
@@ -815,7 +853,7 @@ phi = 0.
 B = 1.
 Bmin = 0
 Bmax = 0
-ky_max = 0.5
+ky_max = 0.
 ky_max_interp = ky
 anum = 10
 xnum = 100
@@ -850,7 +888,8 @@ param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,
 #plotCurrentvsPhi(B,Ef,L,Z,kBT,N,method)
 #testFunction(B, Ef, ky, y, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
-plotAndSaveCurrentvsPhi(1.,5.,5,param,N)
+#plotAndSaveCurrentvsPhi(1.,5.,5,param,N)
+plotAndSaveCurrentvsB(0.1,5.,param,20)
 #plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
 #plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
 
