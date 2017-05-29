@@ -210,14 +210,14 @@ def plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 		fig.savefig(path+name+'.png')
 		plt.close(fig)
 		
-		"""
+		
 		fig = plt.figure()
 		plt.plot(xVal_array,time_array)
 		title = 'Time vs %s for ABS energy. Interpolation time %.2f' %(xVariable,time_interp)
 		plt.title(title)
-		fig.savefig(path+name+'_time.png')
+		fig.savefig(path+'time_'+name+'.png')
 		plt.close(fig)
-		"""
+		
 		
 ########################################################
 # E vs k
@@ -399,7 +399,7 @@ def plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 		plt.plot(xVal_array,time_array)
 		title = 'Time vs %s for Free energy. Interpolation time %.2f' %(xVariable,time_interp)
 		plt.title(title)
-		fig.savefig(path+name+'_time.png')
+		fig.savefig(path+'time_'+name+'.png')
 		plt.close(fig)
 
 		
@@ -816,27 +816,28 @@ def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 	
 	
 def shellPlot(param):
-	param.ky = 0.
+	param.ky = 0.1
 	param.B = 1.
 	param.Bmin = 0
 	param.Bmax = 0
 	param.ky_max_interp = ky
-	param.anum = 50
-	param.xnum = 500
+	param.anum = 30
+	param.xnum = 300
 	
-	N = 50
-	xVariable = 'phi'
-	startXval = -3*np.pi
-	endXval = 3*np.pi
+	N = 100
+	xVariable = 'y'
+	startXval = -param.L/4
+	endXval = param.L/4
 	
 	
 	B = [0.1, 1., 2., 4., 6., 8.]
 	
 	for i in range(0,6):
-		figCount = 5
-		variable = 'ky'
-		start = 0.
-		end = 0.6
+		figCount = 10
+		
+		variable = 'phi'
+		start = -np.pi/2
+		end = np.pi/2
 		
 		param.B = B[i]
 		
@@ -867,19 +868,19 @@ interp = True
 dbl = False
 y = 0.
 
-figCount = 1
+figCount = 10
 variable = 'phi'
 start = -np.pi
-end = 0.1
+end = np.pi
 
-N = 20
+N = 100
 xVariable = 'y'
-startXval = -L/2
-endXval = L/2
+startXval = -L/4
+endXval = L/4
 
 param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,kBT,interp,dbl)
 
-#shellPlot(param)
+shellPlot(param)
 #plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N,n)
 #plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
 #plotAndSaveCurrentDensityvsy(variable,start,end,figCount,-L/4,L/4,param,N)
@@ -889,7 +890,7 @@ param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,
 #testFunction(B, Ef, ky, y, L, Z, N, n, method)
 #plotFvsPhi(B,Ef,ky,L,Z,kBT,N,method)
 #plotAndSaveCurrentvsPhi(1.,5.,5,param,N)
-plotAndSaveCurrentvsB(0.1,5.,param,20)
+#plotAndSaveCurrentvsB(0.1,5.,param,20)
 #plotAndSaveCurrentvsPhi(start,end,figCount,k_max,B,Ef,L,W,Z,kBT,N,method,variable,intLim)
 #plotAndSaveCurrentvsB(start,end,k_max,Ef,L,W,Z,kBT,N,method,intLim)
 
