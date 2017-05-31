@@ -819,8 +819,8 @@ def createInterpolation(param):
 	copy_param.Bmin = 0.5
 	copy_param.Bmax = 10
 	copy_param.ky_max_interp = 0.3
-	copy_param.anum = 100
-	copy_param.xnum = 1000
+	copy_param.anum = 500
+	copy_param.xnum = 5000
 	obj = myObject(copy_param)
 	with open('interpolation.bin','wb') as f:
 		pickle.dump((obj.y1_int_re,obj.y1_int_im,obj.y2_int_re,obj.y2_int_im),f)
@@ -892,8 +892,8 @@ endXval = L/4
 
 param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,kBT,interp)
 
-#createInterpolation(param)
-shellPlot(param)
+createInterpolation(param)
+#shellPlot(param)
 #plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N,n)
 #plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
 #plotAndSaveCurrentDensityvsy(variable,start,end,figCount,-L/4,L/4,param,N)
