@@ -1,15 +1,17 @@
 function I = localCurrent(x,y,theta,l,phi,option,lambda,system,alphaL,alphaR,h,swave)
     L = 100;
-    xi =  h*L*cos(theta);
     gamma = Gamma(x,y,theta,l,option,lambda);
     if strcmp(system,'SNS')
         I = sin(phi/2-gamma/2)*tanh(cos(phi/2-gamma/2)/2);
+        xi =  h*L*cos(theta);
     elseif strcmp(system,'SFS')
         %I = sin(phi/2-gamma/2-sigma*xi/2)*tanh(cos(phi/2-gamma/2-sigma*xi/2)/2);  
         Ip = sin(phi/2-gamma/2+xi/2)*tanh(0.5*cos(phi/2-gamma/2+xi/2));
         Im = sin(phi/2-gamma/2-xi/2)*tanh(0.5*cos(phi/2-gamma/2-xi/2));
         I = 0.5*(Ip+Im);
         %I = 0.5*sin(phi/2-gamma/2+xi/2)/(cosh(cos(phi/2-gamma/2+xi/2))*cosh(cos(phi/2-gamma/2-xi/2)));
+    elseif strcmp(system,'SO')
+        
     elseif strcmp(system,'Dwave')
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

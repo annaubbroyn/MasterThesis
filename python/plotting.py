@@ -4,12 +4,12 @@ matplotlib.use('Agg')
 from Functions import fun
 from Functions import freeEnergy
 from Functions import totalCurrent
-from Functions import totalCurrent2
 from Functions import currentDensity
 from Functions import dFreeEnergy
 from matplotlib import pyplot as plt
 from Functions import parameters
 from Functions import myObject
+from Functions import getMyObj
 import time
 import os
 # nicer looking default plots
@@ -17,6 +17,7 @@ plt.style.use('bmh')
 import numpy as np
 from scipy import optimize as opt
 from copy import deepcopy as copy
+import pickle
 
 ############################################################
 # E vs Phi
@@ -68,7 +69,7 @@ def plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 			param.xnum = x
 			print('xnum: ',x)
 		
-		path = 'figures/052717/Evs'+xVariable+'/figVariable_'+variable+'/'
+		path = 'figures/053117/Evs'+xVariable+'/figVariable_'+variable+'/'
 		folder = ""
 		title = 'E vs '+xVariable + ', ' + variable + ' = ' + str(x)
 		
@@ -134,7 +135,7 @@ def plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 		
 		if xVariable is not 'B':
 			start_interp_time = time.time()
-			obj = myObject(param)
+			obj = getMyObj(param)
 			end_interp_time = time.time()
 			time_interp = end_interp_time - start_interp_time
 		
@@ -149,7 +150,7 @@ def plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 			elif xVariable is 'B':
 				param.B = xVal_array[i]
 				start_interp_time = time.time()
-				obj = myObject(param)
+				obj = getMyObj(param)
 				end_interp_time = time.time()
 				time_interp = end_interp_time - start_interp_time
 			else:
@@ -305,7 +306,7 @@ def plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 			param.xnum = x
 			print('xnum: ',x)
 			
-		path = 'figures/052717/Fvs'+xVariable+'/figVariable_'+variable+'/'
+		path = 'figures/053117/Fvs'+xVariable+'/figVariable_'+variable+'/'
 		folder = ""
 		title = 'F vs '+xVariable + ', ' + variable + ' = ' + str(x)
 		
@@ -358,7 +359,7 @@ def plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 		
 		if xVariable is not 'B':
 			start_interp_time = time.time()
-			obj = myObject(param)
+			obj = getMyObj(param)
 			end_interp_time = time.time()
 			time_interp = end_interp_time - start_interp_time
 		
@@ -375,7 +376,7 @@ def plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,pa
 			elif xVariable is 'B':
 				param.B = xVal_array[i]
 				start_interp_time = time.time()
-				obj = myObject(param)
+				obj = getMyObj(param)
 				end_interp_time = time.time()
 				time_interp = end_interp_time - start_interp_time
 			else:
@@ -453,7 +454,7 @@ def plotAndSaveCurrentDensityvsy(variable,start,end,figCount,starty,endy,param,N
 			param.xnum = x
 			print('xnum: ',x)
 		
-		path = 'figures/052717/dIvsy/figVariable_'+variable+'/'
+		path = 'figures/053117/dIvsy/figVariable_'+variable+'/'
 		folder = ""
 		title = 'dI vs y, ' + variable + ' = ' + str(x)
 		
@@ -488,18 +489,13 @@ def plotAndSaveCurrentDensityvsy(variable,start,end,figCount,starty,endy,param,N
 		folder += '/'
 		folder = folder.replace('.','-')
 		path += folder
-		directory = os.path.dirname(path)
-		if not os.path.exists(directory):
-			os.makedirs(directory)
 		name = '%s_%.2f_N_%d_n_%d_from_%.2f_to_%.2f' % (variable,x,N,n,starty,endy)
 		name = name.replace('.','-')
 		if param.interp:
 			name+='_interp'	
 	
-	
-	
 		start_interp_time = time.time()
-		obj = myObject(param)
+		obj = getMyObj(param)
 		end_interp_time = time.time()
 		time_interp = end_interp_time - start_interp_time
 	
@@ -514,6 +510,15 @@ def plotAndSaveCurrentDensityvsy(variable,start,end,figCount,starty,endy,param,N
 			F_array[i] = currentDensity(param.y,param)
 			end = time.time()
 			time_array[i] = end-start
+		
+		print(path)
+		directory = os.path.dirname(path)
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		if os.path.exists(directory):
+			print('path exists')
+		else:
+			print('path does not exist')
 		
 		fig = plt.figure()
 		plt.plot(xVal_array,F_array,'.')		
@@ -551,10 +556,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,param,N):
 			print('count:',i+1,'/',N)
 			print('      phi = ',phi_array[i])
 			start = time.time()
-			if param.dbl:
-				I_array[i] = totalCurrent2(copy(param))
-			else:
-				I_array[i] = totalCurrent(copy(param))
+			I_array[i] = totalCurrent(copy(param))
 			end = time.time()
 			print('time spent: ',end-start)
 			print(' ')
@@ -562,7 +564,7 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,param,N):
 		plt.plot(phi_array,I_array,'.')
 		title = 'B = %.2f' % B
 		plt.title(title)
-		path = 'figures/052717/IvsPhi/'
+		path = 'figures/053117/IvsPhi/'
 		
 		folder = ""
 		folder+='Ef_%.1f_'%param.Ef
@@ -585,8 +587,6 @@ def plotAndSaveCurrentvsPhi(start,end,figCount,param,N):
 		name += 'y_%.f' % param.y
 		if param.interp:
 			name += '_interp'
-		if param.dbl:
-			name += '_dbl'
 		name = name.replace('.','-')
 	
 		fig.savefig(path+name+'.png')
@@ -640,7 +640,7 @@ def plotAndSavedFreeEnergyvsy(variable,start,end,figCount,starty,endy,param,N):
 			param.xnum = x
 			print('xnum: ',x)
 		
-		path = 'figures/052717/dFvsy/figVariable_'+variable+'/'
+		path = 'figures/053117/dFvsy/figVariable_'+variable+'/'
 		folder = ""
 		title = 'dF vs y, ' + variable + ' = ' + str(x)
 		
@@ -686,7 +686,7 @@ def plotAndSavedFreeEnergyvsy(variable,start,end,figCount,starty,endy,param,N):
 		
 	
 		start_interp_time = time.time()
-		obj = myObject(param)
+		obj = getMyObj(param)
 		end_interp_time = time.time()
 		time_interp = end_interp_time - start_interp_time
 	
@@ -741,7 +741,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,param,N):
 	
 	title = 'I vs B'
 	plt.title(title)
-	path = 'figures/052717/IvsB/'
+	path = 'figures/053117/IvsB/'
 	
 	folder = ""
 	folder+='Ef_%.1f_'%param.Ef
@@ -776,7 +776,7 @@ def plotAndSaveCurrentvsB(B_start,B_end,param,N):
 	
 	title = 'Current vs magnetic field'
 	plt.title(title)
-	path = 'figures/052717/IvsB/'
+	path = 'figures/053117/IvsB/'
 	folder = 'Ef_%.1f/'%Ef
 	folder = folder.replace('.','-')
 	path += folder
@@ -814,13 +814,22 @@ def testFunction(B, Ef, ky, y, L, Z, N, n, method):
 	plt.legend()
 	plt.show()
 	
+def createInterpolation(param):
+	copy_param = copy(param)
+	copy_param.Bmin = 0.5
+	copy_param.Bmax = 10
+	copy_param.ky_max_interp = 0.3
+	copy_param.anum = 100
+	copy_param.xnum = 1000
+	obj = myObject(copy_param)
+	with open('interpolation.bin','wb') as f:
+		pickle.dump((obj.y1_int_re,obj.y1_int_im,obj.y2_int_re,obj.y2_int_im),f)
 	
 def shellPlot(param):
-	param.ky = 0.1
+	param.ky = 0.
 	param.B = 1.
 	param.Bmin = 0
 	param.Bmax = 0
-	param.ky_max_interp = ky
 	param.anum = 30
 	param.xnum = 300
 	
@@ -831,20 +840,24 @@ def shellPlot(param):
 	
 	
 	B = [0.1, 1., 2., 4., 6., 8.]
+	ky = [0., 0.01, 0.1, 0.2, 0.3]
 	
-	for i in range(0,6):
-		figCount = 10
-		
-		variable = 'phi'
-		start = -np.pi/2
-		end = np.pi/2
-		
-		param.B = B[i]
-		
-		param.interp = True
-		plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
-		param.interp = False
-		plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
+	for j in range(0,5):
+		for i in range(0,6):
+			figCount = 10
+			
+			variable = 'phi'
+			start = -np.pi/2
+			end = np.pi/2
+			
+			param.ky = ky[j]
+			param.B = B[i]
+			param.ky_max_interp = param.ky
+			
+			param.interp = True
+			plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
+			param.interp = False
+			plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
 	
 
 		
@@ -865,7 +878,6 @@ Z = 0.
 kBT = 1.
 n = 4
 interp = True
-dbl = False
 y = 0.
 
 figCount = 10
@@ -878,9 +890,10 @@ xVariable = 'y'
 startXval = -L/4
 endXval = L/4
 
-param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,kBT,interp,dbl)
+param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,kBT,interp)
 
-shellPlot(param)
+createInterpolation(param)
+#shellPlot(param)
 #plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N,n)
 #plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
 #plotAndSaveCurrentDensityvsy(variable,start,end,figCount,-L/4,L/4,param,N)
