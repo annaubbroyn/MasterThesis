@@ -103,18 +103,23 @@ class getMyObj:
 		filename = 'interpolation.bin'
 		directory = os.path.dirname(filename)
 		if not param.interp:
+			print('Interpolation is not used')
 			self.interp = False
 			return
 		self.interp = True
 		if os.path.isfile(filename):
+			print('Getting interpolation from file ...')
 			with open(filename,'rb') as f:
 				self.y1_int_re, self.y1_int_im, self.y2_int_re, self.y2_int_im = pickle.load(f) 
+			print('Interpolation is loaded successfully')
 		else:
+			print('Doing new interpolation ...')
 			obj = myObject(param)
 			self.y1_int_re = obj.y1_int_re
 			self.y1_int_im = obj.y1_int_im
 			self.y2_int_re = obj.y2_int_re
 			self.y2_int_im = obj.y2_int_im
+			print('Interpolation was successfully made')
 
 def Y1(x, a, obj):
 	if obj.interp:

@@ -839,7 +839,7 @@ def shellPlot(param):
 	endXval = param.L/4
 	
 	
-	B = [0.1, 1., 2., 4., 6., 8.]
+	B = [0.5, 1., 2., 4., 6., 8.]
 	ky = [0., 0.01, 0.1, 0.2, 0.3]
 	
 	for j in range(0,5):
@@ -855,9 +855,9 @@ def shellPlot(param):
 			param.ky_max_interp = param.ky
 			
 			param.interp = True
-			plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
+			plotAndSaveCurrentDensityvsy(variable,start,end,figCount,-L/4,L/4,param,N)
 			param.interp = False
-			plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
+			plotAndSaveCurrentDensityvsy(variable,start,end,figCount,-L/4,L/4,param,N)
 	
 
 		
@@ -892,8 +892,8 @@ endXval = L/4
 
 param = parameters(y,ky,phi,B,Bmin,Bmax,ky_max,ky_max_interp,anum,xnum,Ef,L,W,Z,kBT,interp)
 
-createInterpolation(param)
-#shellPlot(param)
+#createInterpolation(param)
+shellPlot(param)
 #plotAndSaveEvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N,n)
 #plotAndSaveFvsPhi(variable,start,end,figCount,xVariable,startXval,endXval,param,N)
 #plotAndSaveCurrentDensityvsy(variable,start,end,figCount,-L/4,L/4,param,N)
